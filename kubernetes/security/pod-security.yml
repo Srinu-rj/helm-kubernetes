@@ -1,7 +1,9 @@
+#TODO -> cluster-level resource in Kubernetes that controls security-sensitive aspects of the pod specification
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: restrictive
+  namespace: backend
 spec:
   privileged: false
   hostNetwork: false

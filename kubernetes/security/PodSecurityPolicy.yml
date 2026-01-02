@@ -2,6 +2,7 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: restricted-psp
+  namespace: backend
 spec:
   privileged: false  # Disallow privileged containers
   allowPrivilegeEscalation: false

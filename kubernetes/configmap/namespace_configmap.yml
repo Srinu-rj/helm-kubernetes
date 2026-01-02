@@ -1,3 +1,5 @@
+# TODO -> Finalizers in Kubernetes are namespaced keys that instruct the system to delay the complete deletion of a resource until specific cleanup conditions are met
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:

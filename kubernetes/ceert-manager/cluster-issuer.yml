@@ -4,7 +4,7 @@ metadata:
   name: dns-01-production
 spec:
   acme:
-    email: your-email@yourdomain.com
+    email: dnsrinu143@gmail.com
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: dns-01-production-cluster-issuer

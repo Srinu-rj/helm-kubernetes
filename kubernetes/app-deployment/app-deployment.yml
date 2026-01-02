@@ -28,27 +28,7 @@ spec:
           restartPolicy: Always
           hostNetwork: true
           dnsPolicy: ClusterFirstWithHostNet
-          env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: postgres-configmap
-                  key: host
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: postgres-configmap
-                  key: name
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  key: postgres_user
-                  name: postgres-credentials
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-credentials
-                  key: postgres_password
+
 ---
 apiVersion: v1
 kind: Service
@@ -58,10 +38,10 @@ metadata:
   labels:
     name: backend-service-k8s
 spec:
-  type:  LoadBalancer
+  type:  NotoPort #LoadBalancer
   ports:
     - protocol: http
-      port: 1199
+      port: 80
       targetPort: 1199
   selector:
     app: backend-service-k8s

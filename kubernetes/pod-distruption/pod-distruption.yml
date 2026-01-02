@@ -1,6 +1,10 @@
 # This YAML file defines Pod Disruption Budgets (PDBs) for two different services in a Kubernetes cluster.
 # k drain node_name --ignore-daemonsets
 # k uncordon node_name to allow scheduling pods on the node again.
+
+# TODO -> Handling Stateful Applications |  we can use a PDB configuration that strictly limits the number of simultaneous disruptions
+# TODO ->  kubectl get pdb |  kubectl describe pdb frontend-budget
+# TODO ->  A PodDisruptionBudget (PDB) is a Kubernetes policy that specifies the minimum number of pods that must remain available during voluntary disruptions, such as node maintenance or upgrades.
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -10,14 +14,14 @@ spec:
   minAvailable: 3
   selector:
     matchLabels:
-      app: backendservice
+      app: backendservice  #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: databaseservice-pdb
 spec:
-  maxUnavailable: 7
+  maxUnavailable: 7 # TODO -> maxUnavailable: 50%
   selector:
     matchLabels:
       app: databaseservice
