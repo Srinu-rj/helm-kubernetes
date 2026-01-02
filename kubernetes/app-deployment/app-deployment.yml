@@ -13,21 +13,12 @@ spec:
       labels:
         app: backend-service-k8s
     spec:
-      securityContext:  #TODO runAsUser, runAsGroup, fsGroup, allowPrivilegeEscalation, and readOnlyRootFilesystem
-        runAsUser: 1000
-        runAsGroup: 3000
-        fsGroup: 2000
-        supplementalGroups: [1002]
-        runAsNonRoot: true
-        allowPrivilegeEscalation: false
       containers:
         - name: backend-service-k8s
-          image: srinu641/spring-application-k8s:v1.02
+          image: srinu641/spring-application-k8s:v1.0 # -> 👍
           ports:
             - containerPort: 1199
           restartPolicy: Always
-          hostNetwork: true
-          dnsPolicy: ClusterFirstWithHostNet
 
 ---
 apiVersion: v1
@@ -38,9 +29,9 @@ metadata:
   labels:
     name: backend-service-k8s
 spec:
-  type:  NotoPort #LoadBalancer
+  type:  NodePort #LoadBalancer
   ports:
-    - protocol: http
+    - protocol: TCP
       port: 80
       targetPort: 1199
   selector:
