@@ -1,0 +1,15 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted-psp
+spec:
+  privileged: false  # Disallow privileged containers
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL  # Drop all capabilities
+  volumes:
+    - configMap
+    - emptyDir
+  hostNetwork: false  # Disallow host network access
+  runAsUser:
+    rule: 'MustRunAsNonRoot'  # Enforce running as non-root user
