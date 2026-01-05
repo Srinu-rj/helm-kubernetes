@@ -1,39 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-service-application
+  name: application-deploy
   namespace: backend
+  labels:
+    app: app-label
+    version: v1.0.1
 spec:
   selector:
     matchLabels:
-      app: backend-service-k8s
-  replicas: 8
+      app: app-label
+      version: v1.0.1
+  replicas: 9
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
-        app: backend-service-k8s
+        app: app-label
+        version: v1.0.1
     spec:
       containers:
-        - name: backend-service-k8s
-          image: srinu641/spring-application-k8s:v1.0 # -> 👍
+        - name: spring-application-container
+          image: srinu641/spring-application-k8s:v1.02
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 1199
-          restartPolicy: Always
-
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
+            limits:
+              memory: "356Mi"
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-service-k8s
+  name: application-service
   namespace: backend
   labels:
-    name: backend-service-k8s
+    app: app-label
+    version: v1.0.1
 spec:
-  type:  NodePort #LoadBalancer
+  type: NodePort
+  selector:
+    app: app-label
+    version: v1.0.1
   ports:
     - protocol: TCP
+      name: http
       port: 80
       targetPort: 1199
-  selector:
-    app: backend-service-k8s
 ---

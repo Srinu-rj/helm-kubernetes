@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: spring-boot-container
-          image: srinu641/spring-image:1.0
+          image: srinu641/spring-application-k8s:v1.02
           ports:
             - containerPort: 8998
 ---

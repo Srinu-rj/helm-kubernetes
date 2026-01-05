@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spring-boot-app-cicd
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Srinu-rj/helm-kubernetes.git
+    targetRevision: HEAD
+    path: kubernetes/app-deployment
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backend
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      enabled: true
+---

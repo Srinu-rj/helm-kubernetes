@@ -1,21 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: my-app
+  name: my-helm-app
+  namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/Srinu-rj/spring-food-app.git
+    repoURL: https://github.com/yourname/helm-kubernetes.git
     targetRevision: main
-    path: /kubernates/.
+    path: helm-charts/my-app
     helm:
       values: |
         replicaCount: 2
         service:
-          port: 8998
-          targetPort: 8998
+          port: 90
+          targetPort: 1199
   destination:
     server: https://kubernetes.default.svc
-    namespace: database-production
+    namespace: backend
   syncPolicy:
-    automated: {}
+    automated:
+      prune: true
+      selfHeal: true
+---
