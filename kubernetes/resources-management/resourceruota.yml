@@ -17,9 +17,9 @@ metadata:
   name: resource-quota
 spec:
   hard:
-    requests.cpu: 400m # Todo 400 millicores
-    requests.memory: 200Mi # Todo 200 Megabytes
-    limits.cpu: 2000m
+    requests.cpu: 1 # Todo 400 millicores
+    requests.memory: 500Mi # Todo 200 Megabytes
+    limits.cpu: 2
     limits.memory: 8Gi
     pods: "10"
     replicationcontrollers: "5"
@@ -29,6 +29,4 @@ spec:
     persistentvolumeclaims: "4"
     services: "5"
     services.nodeports: "2"
-    # Only two PVCs can claim storage with the ssd StorageClass.
-#    ssd.storageclass.storage.k8s.io/persistentvolumeclaims: "2"
 ---
