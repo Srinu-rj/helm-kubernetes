@@ -1,0 +1,13 @@
+#TODO -> while deploying application with namespace Helm label are Mandatory.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespaces.devNamespace }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: backend-rle
+    meta.helm.sh/release-namespace: dev
+
+---

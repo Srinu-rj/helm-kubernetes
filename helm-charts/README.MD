@@ -3,7 +3,7 @@
  helm install backend-rle backend
  helm upgrade backend-rle backend
  helm uninstall backend-rle
- helm install backend-rle backend/ --values backend/values-qa.yaml -n database-qa --create-namespace
+ helm install backend-rle backend/ --values backend/values-qa.yaml -n qa --create-namespace
  helm install backend-rle backend/ --values backend/values-qa.yaml -n database-dev
  helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n database-dev
 

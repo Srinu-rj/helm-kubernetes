@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.service.serviceApp }}
-  namespace: dev
+  namespace: {{ .Values.namespaces.devNamespace }}
   labels:
     {{- include "app-label" . | nindent 4 }}
 spec:

@@ -29,9 +29,9 @@ compute:
     memory: "356Mi"
     cpu: "500m"
 
-namespace:
-  enabled: false
-  name: database-qa
+namespaces:
+  enabled: true
+  devNamespace: dev3
 
 strategy:
   type: RollingUpdate
