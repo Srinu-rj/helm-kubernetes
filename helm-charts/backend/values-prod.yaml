@@ -1,0 +1,52 @@
+deployment:
+  replicas: 10
+  restartPolicy: Always
+  deploymentName: backend-deployment
+
+
+service:
+  serviceApp: backend-service
+  type: NodePort
+  targetPort: 1199
+  port: 80
+
+app:
+  env: dev
+
+image:
+  repository: srinu641/spring-application-k8s # Your default image repository
+  pullPolicy: IfNotPresent
+  tag: "v1.02" # A default tag that will be overridden by the pipeline
+
+container:
+  containerName: spring_boot_container
+  port: 1199
+
+compute:
+  request:
+    memory: "70Mi"
+    cpu: 0.7
+  limits:
+    memory: "356Mi"
+    cpu: 1
+
+#namespace:
+#  enabled: false
+#  name: database-dev
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+
+
+hpa:
+  enabled: false
+#  name: backend-hpa
+#  minReplicas: 3
+#  maxReplicas: 15
+#  averageUtilization: 70
+
+
