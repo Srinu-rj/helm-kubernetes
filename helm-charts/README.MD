@@ -2,7 +2,9 @@
  helm create backend
  helm install backend-rle backend
  helm upgrade backend-rle backend
- helm install backend-rle backend/ -n database-api
+ helm uninstall backend-rle
+ helm install backend-rle backend/ --values backend/values-qa.yaml -n database-qa --create-namespace
+ helm install backend-rle backend/ --values backend/values-qa.yaml -n database-dev
  helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n database-dev
 
  # List all Helm releases
@@ -59,7 +61,11 @@ helm get values dev-template -n database-api
 ✅ Get full release info
 helm get all dev-template -n database-api
 
-
+# HELM DEPLOYMENT IMAGES
+![img.png](img.png)
+![img_1.png](img_1.png)
+![img_2.png](img_2.png)
+![img_3.png](img_3.png)
 
 
 

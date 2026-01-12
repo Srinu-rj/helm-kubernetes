@@ -1,4 +1,4 @@
-{{- define "app.label" -}}
-app: backend_api
+{{- define "app-label" -}}
+app: app-label
 env: {{ .Values.app.env }}
 {{- end -}}

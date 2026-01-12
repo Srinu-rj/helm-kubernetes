@@ -1,37 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-application-deploy
+  name: {{ .Values.deploymentName }}
+  namespace: dev
   labels:
-    app: app-label
-    version: v1.0.1
+    {{- include "app-label" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: app-label
-      version: v1.0.1
-  replicas: 9
+      {{- include "app-label" . | nindent 6 }}
+  replicas: {{ .Values.replicas }}
   strategy:
-    type: RollingUpdate
+    type: {{ .Values.strategy.type }}
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
   template:
     metadata:
       labels:
-        app: app-label
-        version: v1.0.1
+        {{- include "app-label" . | nindent 8 }}
     spec:
       containers:
-        - name: spring-application-container
-          image: srinu641/spring-application-k8s:v1.02
-          imagePullPolicy: IfNotPresent
+        - name: {{ .Values.container.containerName }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }} " #TODO ->< IMAGE NAME AND TAGS
+          imagePullPolicy: {{ .Values.restartPolicy }}
           ports:
-            - containerPort: 1199
+            - containerPort: {{ .Values.image_port_number }}
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "10m"
-            limits:
-              memory: "356Mi"
-              cpu: "500m"
+             {{- toYaml .Values.compute | nindent 12 }}
+
+---
