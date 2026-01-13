@@ -2,7 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.deploymentName }}
-  namespace: {{ .Values.namespaces.devNamespace }}
+  namespace: {{- if .Values.namespace.enabled }}
+     {{ .Values.namespace.name }}
+   {{- else -}}
+     {{ .Release.Namespace }}
+   {{- end }}
   labels:
     {{- include "app-label" . | nindent 4 }}
 spec:
@@ -22,7 +26,7 @@ spec:
     spec:
       containers:
         - name: {{ .Values.container.containerName }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }} " #TODO ->< IMAGE NAME AND TAGS
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" #TODO ->< IMAGE NAME AND TAGS
           imagePullPolicy: {{ .Values.restartPolicy }}
           ports:
             - containerPort: {{ .Values.image_port_number }}

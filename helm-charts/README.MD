@@ -1,11 +1,22 @@
- # Create a new Helm chart
+ # Create and delete [ Helm chart ]
  helm create backend
  helm install backend-rle backend
  helm upgrade backend-rle backend
  helm uninstall backend-rle
+ helm install backend-rle backend/ --values backend/values-qa.yaml
+ helm upgrade backend-rle backend/ --values backend/values-qa.yaml
+ 
+# Manifest
+ helm get manifest backend-rle
+ helm get manifest backend-rle > backend-qa-manifest.yaml
+
+ helm template backend-dev backend/ -f backend/values-dev.yaml -n dev > backend-dev.yaml
+
+ # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]
  helm install backend-rle backend/ --values backend/values-qa.yaml -n qa --create-namespace
- helm install backend-rle backend/ --values backend/values-qa.yaml -n database-dev
- helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n database-dev
+ helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n qa --create-namespace
+ helm install backend-rle backend/ --values backend/values-prod.yaml -n database-dev
+ helm upgrade backend-rle backend/ --values backend/values-future.yaml -n database-dev
 
  # List all Helm releases
  helm list -a 
@@ -15,8 +26,8 @@
  helm uninstall chart-name
 
  # Generate templates for different environments
- helm template dev-template ./backend/values-dev.yaml ./backend/ -n database-api > dev-template.yaml
- helm template qa-template ./backend/values-qa.yaml ./backend/ -n database > qa-template.yaml
+ helm template backend-rle ./backend/values-dev.yaml ./backend/ -n qa > dev-template.yaml
+ helm template qa-template ./backend/values-qa.yaml ./backend/ -n qa > qa-template.yaml
  helm template future-template ./backend/values-feture.yaml ./backend/ -n database > future-template.yaml
  helm template prod-template ./backend/values-prod.yaml ./backend/ -n database > prod-template.yaml
 
@@ -66,7 +77,11 @@ helm get all dev-template -n database-api
 ![img_1.png](img_1.png)
 ![img_2.png](img_2.png)
 ![img_3.png](img_3.png)
+#No Need to specify Namespace while Deleting and Deploying Helm Charts
+![img_4.png](img_4.png)
 
+# Kubernetes Objects:
+![img_5.png](img_5.png)
 
 
 [//]: # (How to Remove Finalizers)

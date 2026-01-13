@@ -1,4 +1,4 @@
-replicas: 5
+replicas: 6
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -13,9 +13,9 @@ app:
   env: dev
 
 image:
-  repository: srinu641/spring-application-k8s # Your default image repository
+  repository: srinu641/spring-application-k8s
+  tag: v1.02
   pullPolicy: IfNotPresent
-  tag: v1.02 # A default tag that will be overridden by the pipeline
 
 container:
   containerName: springbootcontainer # container name must be lower case
@@ -29,17 +29,15 @@ compute:
     memory: "356Mi"
     cpu: "500m"
 
-namespace:
-  enabled: true
-  name: qa
-
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 1
     maxUnavailable: 0
 
-
+namespace:
+  enabled: true
+  name: qa
 
 hpa:
   enabled: false

@@ -3,11 +3,10 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.namespaces.devNamespace }}
+  name: {{ .Values.namespace.name }}
   labels:
     app.kubernetes.io/managed-by: Helm
   annotations:
-    meta.helm.sh/release-name: backend-rle
-    meta.helm.sh/release-namespace: dev
-
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 ---
