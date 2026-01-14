@@ -92,3 +92,47 @@ kubectl replace --raw "/api/v1/namespaces/backend/finalize" -f ns.json
 [//]: # (Example: Remove finalizer from Pod / PVC)
 kubectl patch pvc my-pvc -p '{"metadata":{"finalizers":[]}}' --type=merge
 
+# KEDA HPA Autoscaling
+# 🟢 Step 1: Install KEDA core (if not already)
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda -n keda --create-namespace
+
+Verify:
+kubectl get pods -n keda
+kubectl get crd | grep keda
+kubectl get crd | grep http
+
+
+#🟢 Step 2: Install KEDA HTTP Add-on (THIS IS REQUIRED)
+helm install keda-http-addon kedacore/keda-add-ons-http -n keda
+kubectl get crd | grep httpscaledobjects
+
+#🟢 Step 3: Confirm API version (important):
+kubectl get crd httpscaledobjects.http.keda.sh -o yaml | grep version -A5
+
+🔹 4️⃣ Generate Load
+✅ METHOD 1: curl (Simple Test)
+
+for i in {1..500}; do
+   curl -H "Host: myhost.com" http://localhost:1199 &
+done
+
+✅ METHOD 2: Apache Bench (Recommended)
+sudo apt install apache2-utils
+
+ab -n 5000 -c 200 -H "Host: myhost.com" http://localhost:8080/
+
+-n → total requests
+-c → concurrent requests
+
+
+✅ METHOD 3: hey (Best Tool for KEDA HTTP)
+sudo snap install hey
+
+hey -n 10000 -c 300 -H "Host: myhost.com" http://localhost:8080
+
+
+🔹 5️⃣ Watch Autoscaling Live
+kubectl get pods -n qa -w
+kubectl get httpscaledobject -n qa -w

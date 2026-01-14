@@ -1,4 +1,4 @@
-replicas: 6
+replicas: 11
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -24,10 +24,10 @@ container:
 compute:
   requests:
     memory: "64Mi"
-    cpu: "10m"
+    cpu: "800m"
   limits:
     memory: "356Mi"
-    cpu: "500m"
+    cpu: "900m"
 
 strategy:
   type: RollingUpdate
