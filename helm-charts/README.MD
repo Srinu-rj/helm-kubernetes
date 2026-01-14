@@ -6,11 +6,14 @@
  helm install backend-rle backend/ --values backend/values-qa.yaml
  helm upgrade backend-rle backend/ --values backend/values-qa.yaml
  
-# Manifest
+ # Manifest and Template 
  helm get manifest backend-rle
  helm get manifest backend-rle > backend-qa-manifest.yaml
-
- helm template backend-dev backend/ -f backend/values-dev.yaml -n dev > backend-dev.yaml
+ # Template generation for different environments [Important]*
+ helm template dev-deployment backend/ -f backend/values-dev.yaml > dev-deployment.yaml
+ helm template qa-deployment backend/ -f backend/values-qa.yaml > qa-deployment.yaml
+ helm template future-deployment backend/ -f backend/values-future.yaml > future-deployment.yaml
+ helm template prod-deployment backend/ -f backend/values-prod.yaml > prod-deployment.yaml
 
  # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]
  helm install backend-rle backend/ --values backend/values-qa.yaml -n qa --create-namespace

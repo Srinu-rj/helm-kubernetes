@@ -32,6 +32,10 @@ spec:
             - containerPort: {{ .Values.image_port_number }}
           resources:
             requests:
-             {{- toYaml .Values.compute | nindent 12 }}
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
 
 ---
