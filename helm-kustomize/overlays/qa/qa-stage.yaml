@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/Srinu-rj/helm-kubernetes
     targetRevision: master
-    path: backend
+    path: helm-kubernetes/backend
     helm:
       valueFiles:
         - values-qa.yaml
