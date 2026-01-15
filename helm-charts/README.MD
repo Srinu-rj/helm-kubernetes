@@ -8,6 +8,7 @@
  # Manifest and Template 
  helm get manifest backend-rle
  helm get manifest backend-rle > backend-qa-manifest.yaml
+
  # Template generation for different environments [Important]*
 ![img_6.png](img_6.png) [QA] [Dev] [Prod] [Future]
  helm template dev-deployment backend/ -f backend/values-dev.yaml > deployment-dev.yaml
@@ -16,15 +17,20 @@
  helm template prod-deployment backend/ -f backend/values-prod.yaml > deployment-prod.yaml
 
  # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]
+ # QA Environment
+ ![img_10.png](img_10.png)
+ # Dev Environment
+ # Prod Environment
  helm install backend-qa-realese backend/ --values backend/values-qa.yaml -n qa-namespace --create-namespace
- helm install backend-dev-realese backend/ --values backend/values-dev.yaml -n dev-namespace --create-namespace
- helm install backend-prod-realese backend/ --values backend/values-prod.yaml -n prod-namespace --create-namespace
- helm install backend-future-realese backend/ --values backend/values-future.yaml -n future-namespace --create-namespace
+ helm install backend-dev-realese backend/ --values backend/values-dev.yaml 
+ helm install backend-prod-realese backend/ --values backend/values-prod.yaml 
+ helm install backend-future-realese backend/ --values backend/values-future.yaml 
 
- helm upgrade backend-rle backend/ --values backend/values-qa.yaml -n qa-namespace 
- helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n dev-namespace 
- helm upgrade backend-rle backend/ --values backend/values-prod.yaml -n prod-namespace 
- helm upgrade backend-rle backend/ --values backend/values-future.yaml -n future-namespace 
+ # Upgrade a Helm chart with custom values [QA] [Dev] [Prod] [Future]
+ helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml 
+ helm upgrade backend-dev-realese backend/ --values backend/values-dev.yaml  
+ helm upgrade backend-prod-realese backend/ --values backend/values-prod.yaml  
+ helm upgrade backend-future-realese backend/ --values backend/values-future.yaml  
 
  # kubernetes objects[ KEDA | svc | ingress | hpa | pvc | pv | cm | secret ]:
  kubectl explain httpscaledobject.spec
@@ -35,6 +41,7 @@
 
  # List all Helm releases
  helm list -a
+ helm uninstall backend-dev-realese backend-future-realese backend-prod-realese backend-qa-realese
 
  # Install a Helm chart with custom values [Deployment]
  helm install <chart-name> <chart-location> -f values-nginx.yml 

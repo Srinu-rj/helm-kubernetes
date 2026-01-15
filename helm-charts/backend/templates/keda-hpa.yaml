@@ -2,7 +2,7 @@
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: nginx-http-scaledobject
+  name: {{ .Values.hpa.name }}
   namespace: {{ .Values.namespace.name }}
 spec:
   hosts:
@@ -16,18 +16,4 @@ spec:
     max: {{ .Values.hpa.maxReplicas }}
      {{- end }}
 ---
-apiVersion: http.keda.sh/v1alpha1
-kind: HTTPScaledObject
-metadata:
-  name: nginx-http-scaledobject
-  namespace: {{ .Release.Namespace }}
-spec:
-  hosts:
-    - myhost.com
-  targetPendingRequests: 1
-  scaleTargetRef:
-    service: backend-service
-    port: 80
-  replicas:
-    min: {{ .Values.hpa.minReplicas }}
-    max: {{ .Values.hpa.maxReplicas }}
+

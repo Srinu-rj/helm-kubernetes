@@ -10,6 +10,42 @@ metadata:
     meta.helm.sh/release-name: dev-deployment
     meta.helm.sh/release-namespace: default
 ---
+# Source: backend/templates/resourceQuota.yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota-with-limits
+  namespace: dev-namespace
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "4"
+    requests.memory: "4Gi"
+    limits.cpu: "8"
+    limits.memory: "8Gi"
+---
+# Source: backend/templates/limitrange.yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limit-range
+  namespace: dev-namespace
+spec:
+  limits:
+    - type: Container
+      max:
+        cpu: "2"
+        memory: "2Gi"
+      min:
+        cpu: "500m"
+        memory: "500Mi"
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "500Mi"
+---
 # Source: backend/templates/service.yml
 apiVersion: v1
 kind: Service
@@ -44,7 +80,7 @@ spec:
     matchLabels:
       app: app-label
       env: dev
-  replicas: 10
+  replicas: 6
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -74,15 +110,15 @@ spec:
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: nginx-http-scaledobject
+  name: backend-hpa
   namespace: dev-namespace
 spec:
-  host: myhost.com
+  hosts:
+    - myhost.com
   targetPendingRequests: 1
   scaleTargetRef:
-    deployment: back-end
     service: backend-service
-    port: 1199
+    port: 80
   replicas:
     min: 1
     max: 20

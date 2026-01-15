@@ -11,7 +11,7 @@ spec:
     path: helm-charts/backend
     helm:
       valueFiles:
-        - values-qa.yaml
+        - values-dev.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: dev-namespace

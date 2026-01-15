@@ -1,11 +1,11 @@
-replicas: 3
+replicas: 7
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
 
 service:
   serviceApp: backend-service
-  types: NodePort
+  types: NodePorts
   targetPort: 1199
   port: 80
 
@@ -43,6 +43,7 @@ hpa:
   enabled: true
   minReplicas: 1
   maxReplicas: 10
+  name: backend-hpa
 
 keda:
   enabled: true
