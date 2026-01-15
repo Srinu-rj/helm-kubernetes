@@ -3,36 +3,37 @@
  helm install backend-rle backend
  helm upgrade backend-rle backend
  helm uninstall backend-rle
- helm install backend-rle backend/ --values backend/values-qa.yaml
- helm upgrade backend-rle backend/ --values backend/values-qa.yaml
- 
+ k get pods --all-namespaces
+
  # Manifest and Template 
  helm get manifest backend-rle
  helm get manifest backend-rle > backend-qa-manifest.yaml
  # Template generation for different environments [Important]*
- helm template dev-deployment backend/ -f backend/values-dev.yaml > dev-deployment.yaml
- helm template qa-deployment backend/ -f backend/values-qa.yaml > qa-deployment.yaml
- helm template future-deployment backend/ -f backend/values-future.yaml > future-deployment.yaml
- helm template prod-deployment backend/ -f backend/values-prod.yaml > prod-deployment.yaml
+![img_6.png](img_6.png) [QA] [Dev] [Prod] [Future]
+ helm template dev-deployment backend/ -f backend/values-dev.yaml > deployment-dev.yaml
+ helm template qa-deployment backend/ -f backend/values-qa.yaml > deployment-qa.yaml
+ helm template future-deployment backend/ -f backend/values-future.yaml > deployment-future.yaml
+ helm template prod-deployment backend/ -f backend/values-prod.yaml > deployment-prod.yaml
 
  # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]
- helm install backend-rle backend/ --values backend/values-qa.yaml -n qa --create-namespace
- helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n qa --create-namespace
- helm install backend-rle backend/ --values backend/values-prod.yaml -n database-dev
- helm upgrade backend-rle backend/ --values backend/values-future.yaml -n database-dev
+ helm install backend-qa-realese backend/ --values backend/values-qa.yaml -n qa-namespace --create-namespace
+ helm install backend-dev-realese backend/ --values backend/values-dev.yaml -n dev-namespace --create-namespace
+ helm install backend-prod-realese backend/ --values backend/values-prod.yaml -n prod-namespace --create-namespace
+ helm install backend-future-realese backend/ --values backend/values-future.yaml -n future-namespace --create-namespace
+
+ helm upgrade backend-rle backend/ --values backend/values-qa.yaml -n qa-namespace 
+ helm upgrade backend-rle backend/ --values backend/values-dev.yaml -n dev-namespace 
+ helm upgrade backend-rle backend/ --values backend/values-prod.yaml -n prod-namespace 
+ helm upgrade backend-rle backend/ --values backend/values-future.yaml -n future-namespace 
+
 
  # List all Helm releases
- helm list -a 
+helm list -a
 
  # Install a Helm chart with custom values [Deployment]
  helm install <chart-name> <chart-location> -f values-nginx.yml 
  helm uninstall chart-name
 
- # Generate templates for different environments
- helm template backend-rle ./backend/values-dev.yaml ./backend/ -n qa > dev-template.yaml
- helm template qa-template ./backend/values-qa.yaml ./backend/ -n qa > qa-template.yaml
- helm template future-template ./backend/values-feture.yaml ./backend/ -n database > future-template.yaml
- helm template prod-template ./backend/values-prod.yaml ./backend/ -n database > prod-template.yaml
 
 helm template dev-template ./backend -f ./backend/values-qa.yaml -n database-api
 

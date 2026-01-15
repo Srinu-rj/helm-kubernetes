@@ -1,19 +1,9 @@
-#  When to use ✅ HTTP APIs
-#✅ REST services
-#✅ Ingress-based traffic
-#✅ Scale-to-zero use cases
-#TODO->  Client → KEDA HTTP Proxy → Buffer → Deployment
-
  {{- if (.Values.keda.enabled | default false) }}
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
   name: nginx-http-scaledobject
-  namespace: {{- if .Values.namespace.enabled }}
-     {{ .Values.namespace.name }}
-   {{- else -}}
-     {{ .Release.Namespace }}
-   {{- end }}
+  namespace: {{ .Values.namespace.name }}
 spec:
   host: myhost.com
   targetPendingRequests: 1
@@ -25,5 +15,3 @@ spec:
     min: {{ .Values.hpa.minReplicas }}
     max: {{ .Values.hpa.maxReplicas }}
      {{- end }}
-
----

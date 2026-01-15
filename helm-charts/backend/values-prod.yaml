@@ -21,29 +21,56 @@ container:
   containerName: springbootcontainer # container name must be lower case
   port: 1199
 
-compute:
+resources:
   requests:
-    memory: "64Mi"
-    cpu: "800m"
+    cpu: 400m
+    memory: 64Mi
   limits:
-    memory: "356Mi"
-    cpu: "900m"
+    cpu: 500m
+    memory: 356Mi
 
 strategy:
   type: RollingUpdate
   rollingUpdate:
-    maxSurge: 1
-    maxUnavailable: 0
+    maxSurge: 3
+    maxUnavailable: 1
 
 namespace:
   enabled: true
-  name: qa
+  name: prod-namespace
 
 hpa:
-  enabled: false
-  name: backend-hpa
-  minReplicas: 3
-  maxReplicas: 15
-  averageUtilization: 70
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 25
 
+keda:
+  enabled: true
+
+resourceQuota:
+  enabled: true
+  name: quota-with-limits
+  hard:
+    pods: "10"
+    requestsCpu: "4"
+    requestsMemory: "4Gi"
+    limitsCpu: "8"
+    limitsMemory: "8Gi"
+
+limitRange:
+  enabled: true
+  name: limit-range
+  container:
+    max:
+      cpu: "2"
+      memory: "2Gi"
+    min:
+      cpu: "500m"
+      memory: "500Mi"
+    default:
+      cpu: "1"
+      memory: "1Gi"
+    defaultRequest:
+      cpu: "500m"
+      memory: "500Mi"
 
