@@ -1,0 +1,88 @@
+---
+# Source: backend/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev-namespace
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: dev-deployment
+    meta.helm.sh/release-namespace: default
+---
+# Source: backend/templates/service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: dev-namespace
+  labels:
+    app: app-label
+    env: dev
+spec:
+  type: NodePort
+  selector:
+    app: app-label
+    env: dev
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+      targetPort: 1199
+---
+# Source: backend/templates/deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back-end
+  namespace: dev-namespace
+  labels:
+    app: app-label
+    env: dev
+spec:
+  selector:
+    matchLabels:
+      app: app-label
+      env: dev
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: app-label
+        env: dev
+    spec:
+      containers:
+        - name: springbootcontainer
+          image: "srinu641/spring-application-k8s:v1.02" #TODO ->< IMAGE NAME AND TAGS
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 1199
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "356Mi"
+---
+# Source: backend/templates/keda-hpa.yaml
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: nginx-http-scaledobject
+  namespace: dev-namespace
+spec:
+  host: myhost.com
+  targetPendingRequests: 1
+  scaleTargetRef:
+    deployment: back-end
+    service: backend-service
+    port: 1199
+  replicas:
+    min: 1
+    max: 20

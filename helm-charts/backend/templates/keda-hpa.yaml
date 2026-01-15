@@ -5,13 +5,29 @@ metadata:
   name: nginx-http-scaledobject
   namespace: {{ .Values.namespace.name }}
 spec:
-  host: myhost.com
+  hosts:
+    - myhost.com
   targetPendingRequests: 1
   scaleTargetRef:
-    deployment: {{ .Values.deploymentName }}
-    service: {{ .Values.service.serviceApp }}
-    port: 1199
+    service: backend-service
+    port: 80
   replicas:
     min: {{ .Values.hpa.minReplicas }}
     max: {{ .Values.hpa.maxReplicas }}
      {{- end }}
+---
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: nginx-http-scaledobject
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - myhost.com
+  targetPendingRequests: 1
+  scaleTargetRef:
+    service: backend-service
+    port: 80
+  replicas:
+    min: {{ .Values.hpa.minReplicas }}
+    max: {{ .Values.hpa.maxReplicas }}

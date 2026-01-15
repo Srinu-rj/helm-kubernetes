@@ -26,9 +26,15 @@
  helm upgrade backend-rle backend/ --values backend/values-prod.yaml -n prod-namespace 
  helm upgrade backend-rle backend/ --values backend/values-future.yaml -n future-namespace 
 
+ # kubernetes objects[ KEDA | svc | ingress | hpa | pvc | pv | cm | secret ]:
+ kubectl explain httpscaledobject.spec
+ kubectl explain httpscaledobject.spec.scaleTargetRef
+ kubectl get crd | grep http
+
+
 
  # List all Helm releases
-helm list -a
+ helm list -a
 
  # Install a Helm chart with custom values [Deployment]
  helm install <chart-name> <chart-location> -f values-nginx.yml 
@@ -86,7 +92,10 @@ helm get all dev-template -n database-api
 
 # Kubernetes Objects:
 ![img_5.png](img_5.png)
-
+# Before ResourceQuotas [in Qa Namespace]
+![img_7.png](img_7.png)
+# After ResourceQuotas [in Qa Namespace]
+![img_8.png](img_8.png)
 
 [//]: # (How to Remove Finalizers)
 kubectl get namespace backend -o json > ns.json
@@ -140,3 +149,8 @@ hey -n 10000 -c 300 -H "Host: myhost.com" http://localhost:8080
 🔹 5️⃣ Watch Autoscaling Live
 kubectl get pods -n qa -w
 kubectl get httpscaledobject -n qa -w
+
+
+# Helm kustomization:
+Install kustomize:- curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash 
+![img_9.png](img_9.png)

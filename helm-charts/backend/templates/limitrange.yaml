@@ -1,0 +1,23 @@
+  {{- if .Values.limitRange.enabled }}
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ .Values.limitRange.name }}
+  namespace: {{ .Values.namespace.name }}
+spec:
+  limits:
+    - type: Container
+      max:
+        cpu: {{ .Values.limitRange.container.max.cpu | quote }}
+        memory: {{ .Values.limitRange.container.max.memory | quote }}
+      min:
+        cpu: {{ .Values.limitRange.container.min.cpu | quote }}
+        memory: {{ .Values.limitRange.container.min.memory | quote }}
+      default:
+        cpu: {{ .Values.limitRange.container.default.cpu | quote }}
+        memory: {{ .Values.limitRange.container.default.memory | quote }}
+      defaultRequest:
+        cpu: {{ .Values.limitRange.container.defaultRequest.cpu | quote }}
+        memory: {{ .Values.limitRange.container.defaultRequest.memory | quote }}
+           {{- end }}
+
