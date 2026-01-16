@@ -52,7 +52,7 @@ resourceQuota:
   enabled: true
   name: quota-with-limits
   hard:
-    pods: "10"
+    replicas: 100
     requestsCpu: "4"
     requestsMemory: "4Gi"
     limitsCpu: "8"

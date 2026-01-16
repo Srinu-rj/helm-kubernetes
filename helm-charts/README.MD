@@ -21,7 +21,7 @@
  ![img_10.png](img_10.png)
  # Dev Environment
  # Prod Environment
- helm install backend-qa-realese backend/ --values backend/values-qa.yaml -n qa-namespace --create-namespace
+ helm install backend-qa-realese backend/ --values backend/values-qa.yaml 
  helm install backend-dev-realese backend/ --values backend/values-dev.yaml 
  helm install backend-prod-realese backend/ --values backend/values-prod.yaml 
  helm install backend-future-realese backend/ --values backend/values-future.yaml 
@@ -32,6 +32,20 @@
  helm upgrade backend-prod-realese backend/ --values backend/values-prod.yaml  
  helm upgrade backend-future-realese backend/ --values backend/values-future.yaml  
 
+ # Verify the deployments
+ kubectl get all -n qa-namespace
+ kubectl get all -n dev-namespace
+ kubectl get all -n prod-namespace
+ kubectl get all -n future-namespace
+ 
+ # Uninstall a Helm chart [QA] [Dev] [Prod] [Future]
+ helm uninstall backend-qa-realese
+ helm uninstall backend-dev-realese
+ helm uninstall backend-feture-realese
+ helm uninstall backend-prod-realese
+
+ kubectl delete namespace qa-namespace
+ 
  # kubernetes objects[ KEDA | svc | ingress | hpa | pvc | pv | cm | secret ]:
  kubectl explain httpscaledobject.spec
  kubectl explain httpscaledobject.spec.scaleTargetRef

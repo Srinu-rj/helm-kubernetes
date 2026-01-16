@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: qa
+  name: future-namespace
   labels:
     app.kubernetes.io/managed-by: Helm
   annotations:
@@ -15,7 +15,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: quota-with-limits
-  namespace: qa
+  namespace: future-namespace
 spec:
   hard:
     pods: "10"
@@ -29,7 +29,7 @@ apiVersion: v1
 kind: LimitRange
 metadata:
   name: limit-range
-  namespace: qa
+  namespace: future-namespace
 spec:
   limits:
     - type: Container
@@ -51,7 +51,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
-  namespace: qa
+  namespace: future-namespace
   labels:
     app: app-label
     env: dev
@@ -71,7 +71,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: back-end
-  namespace: qa
+  namespace: future-namespace
   labels:
     app: app-label
     env: dev
@@ -80,7 +80,7 @@ spec:
     matchLabels:
       app: app-label
       env: dev
-  replicas: 6
+  replicas: 7
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -106,27 +106,19 @@ spec:
               cpu: "500m"
               memory: "356Mi"
 ---
-# Source: backend/templates/namespace.yaml
-#TODO -> while deploying application with namespace Helm label are Mandatory.
----
 # Source: backend/templates/keda-hpa.yaml
-#  When to use ✅ HTTP APIs
-#✅ REST services
-#✅ Ingress-based traffic
-#✅ Scale-to-zero use cases
-#TODO->  Client → KEDA HTTP Proxy → Buffer → Deployment
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: nginx-http-scaledobject
-  namespace: qa
+  name: backend-hpa
+  namespace: future-namespace
 spec:
-  host: myhost.com
+  hosts:
+    - myhost.com
   targetPendingRequests: 1
   scaleTargetRef:
-    deployment: back-end
     service: backend-service
-    port: 1199
+    port: 80
   replicas:
     min: 1
-    max: 25
+    max: 10

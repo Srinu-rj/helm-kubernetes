@@ -1,4 +1,4 @@
-replicas: 2
+replicas: 3
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -23,7 +23,7 @@ container:
 
 resources:
   requests:
-    cpu: 10m
+    cpu: 400m
     memory: 64Mi
   limits:
     cpu: 500m
@@ -42,7 +42,7 @@ namespace:
 hpa:
   enabled: true
   minReplicas: 1
-  maxReplicas: 9
+  maxReplicas: 25
   name: backend-hpa
 
 keda:
@@ -52,7 +52,7 @@ resourceQuota:
   enabled: true
   name: quota-with-limits
   hard:
-    pods: "10"
+    replicas: 100
     requestsCpu: "4"
     requestsMemory: "4Gi"
     limitsCpu: "8"
@@ -75,3 +75,4 @@ limitRange:
       cpu: "500m"
       memory: "500Mi"
 
+---

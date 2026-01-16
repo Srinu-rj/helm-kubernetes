@@ -12,4 +12,5 @@ spec:
     limits.cpu: {{ .Values.resourceQuota.hard.limitsCpu | quote }}
     limits.memory: {{ .Values.resourceQuota.hard.limitsMemory | quote }}
      {{- end }}
+
 ---
