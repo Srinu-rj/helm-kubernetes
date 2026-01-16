@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  namespace: {{ .Values.namespace.name }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    qos.projectcalico.org/egressBandwidth: "100M"
+    qos.projectcalico.org/egressBurst: "200M"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-connections: "5"
+    nginx.ingress.kubernetes.io/limit-rate: "500"
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: "blog.example.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.service.serviceApp }}
+                port:
+                  number: {{ .Values.image_port_number }}
+
+---

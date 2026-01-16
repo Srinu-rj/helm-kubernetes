@@ -1,4 +1,4 @@
-replicas: 6
+replicas: 5
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -33,7 +33,7 @@ strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 3
-    maxUnavailable: 0
+    maxUnavailable: 1
 
 namespace:
   enabled: true
@@ -41,32 +41,32 @@ namespace:
 
 hpa:
   enabled: true
-  minReplicas: 0
-  maxReplicas: 20
+  minReplicas: 1
+  maxReplicas: 25
   name: backend-hpa
 
 keda:
   enabled: true
 
 resourceQuota:
-  enabled: true
+  enabled: false
   name: quota-with-limits
   hard:
-    replicas: 100
-    requestsCpu: "4"
+    replicas: "100"
+    requestsCpu: "1"
     requestsMemory: "4Gi"
-    limitsCpu: "8"
+    limitsCpu: "3"
     limitsMemory: "8Gi"
 
 limitRange:
-  enabled: true
+  enabled: false
   name: limit-range
   container:
     max:
       cpu: "2"
       memory: "2Gi"
     min:
-      cpu: "500m"
+      cpu: "800m"
       memory: "500Mi"
     default:
       cpu: "1"
@@ -74,5 +74,53 @@ limitRange:
     defaultRequest:
       cpu: "500m"
       memory: "500Mi"
+
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+serviceAccount:
+  create: false
+  automount: true
+  annotations: {}
+  name: ""
+
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+
+securityContext: {}
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+ingress:
+  enabled: true
+  className: nginx-example
+  name: app-ingress
+
+
+networkPolicy:
+  enabled: true
+  name: application-network-policy
+  podSelector:
+    matchLabels:
+      app: app-label
+  ingress:
+    enabled: true
+  egress:
+    enabled: true
 
 ---

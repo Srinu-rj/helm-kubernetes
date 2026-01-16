@@ -5,6 +5,7 @@
  helm uninstall backend-rle
  k get pods --all-namespaces
 
+ alias k=kubectl
  # Manifest and Template 
  helm get manifest backend-rle
  helm get manifest backend-rle > backend-qa-manifest.yaml
@@ -23,8 +24,8 @@
  # Prod Environment
  helm install backend-qa-realese backend/ --values backend/values-qa.yaml 
  helm install backend-dev-realese backend/ --values backend/values-dev.yaml 
- helm install backend-prod-realese backend/ --values backend/values-prod.yaml 
  helm install backend-future-realese backend/ --values backend/values-future.yaml 
+ helm install backend-prod-realese backend/ --values backend/values-prod.yaml 
 
  # Upgrade a Helm chart with custom values [QA] [Dev] [Prod] [Future]
  helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml 
@@ -35,8 +36,8 @@
  # Verify the deployments
  kubectl get all -n qa-namespace
  kubectl get all -n dev-namespace
- kubectl get all -n prod-namespace
  kubectl get all -n future-namespace
+ kubectl get all -n prod-namespace
  
  # Uninstall a Helm chart [QA] [Dev] [Prod] [Future]
  helm uninstall backend-qa-realese
@@ -45,7 +46,9 @@
  helm uninstall backend-prod-realese
 
  kubectl delete namespace qa-namespace
- 
+
+ k describe replicaset  back-end-7f974867f6 -n dev-namespace
+
  # kubernetes objects[ KEDA | svc | ingress | hpa | pvc | pv | cm | secret ]:
  kubectl explain httpscaledobject.spec
  kubectl explain httpscaledobject.spec.scaleTargetRef
@@ -118,6 +121,31 @@ helm get all dev-template -n database-api
 # After ResourceQuotas [in Qa Namespace]
 ![img_8.png](img_8.png)
 
+# INGRESS
+ -> Cilium: 
+ Cilium provides robust, eBPF-based bandwidth management with support for both ingress and egress limits:
+ Bandwidth limits are enforced in real-time and apply per pod. Cilium uses EDT (Earliest Departure Time) for egress and eBPF token bucket for ingress.
+ Recommended: Use with BPF Host Routing for optimal performance and low latency.
+
+ annotations:
+   kubernetes.io/ingress-bandwidth: "20M"
+   kubernetes.io/egress-bandwidth: "10M"   
+
+# Calico:
+ -> Calico supports fine-grained QoS controls including bandwidth, packet rate, and connection limits.
+    Use Calico-specific annotations: qos.projectcalico.org/ingressBandwidth and qos.projectcalico.org/egressBandwidth.
+    Supports burst limits and peak rate control. Annotations take effect immediately without pod recreation.
+    Note: The Kubernetes-native kubernetes.io/ingress-bandwidth annotations are honored only if Calico's annotations are not present
+
+metadata:
+  annotations:
+    qos.projectcalico.org/egressBandwidth: "100M"
+    qos.projectcalico.org/egressBurst: "200M"   
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-connections: "5"
+    nginx.ingress.kubernetes.io/limit-rate: "500"
+
+  
 [//]: # (How to Remove Finalizers)
 kubectl get namespace backend -o json > ns.json
 "finalizers": []
