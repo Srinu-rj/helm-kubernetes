@@ -88,18 +88,35 @@ readinessProbe:
 serviceAccount:
   create: false
   automount: true
-  annotations: {}
+  annotations: { }
   name: ""
 
-volumes: []
-volumeMounts: []
-nodeSelector: {}
-tolerations: []
-affinity: {}
+volumes: [ ]
+volumeMounts: [ ]
+nodeSelector: { }
+tolerations: [ ]
+affinity: { }
 
+initContainers:
+  - name: wait-for-mysql
+    image: mysql:8.0
+    command:
+      - sh
+      - -c
+      - |
+        echo "Waiting for MySQL to be ready..."
+        until mysqladmin ping \
+          -h "$DB_HOST" \
+          -u "$DB_USER" \
+          -p"$DB_PASSWORD" \
+          --silent; do
+          echo "MySQL not ready, retrying..."
+          sleep 5
+        done
+        echo "MySQL is ready!"
 
-securityContext: {}
-  # capabilities:
+securityContext: { }
+# capabilities:
 #   drop:
 #   - ALL
 # readOnlyRootFilesystem: true

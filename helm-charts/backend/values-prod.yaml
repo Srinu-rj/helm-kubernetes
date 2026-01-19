@@ -1,4 +1,4 @@
-replicas: 5
+replicas: 4
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -23,17 +23,17 @@ container:
 
 resources:
   requests:
-    cpu: 400m
+    cpu: 500m
     memory: 64Mi
   limits:
-    cpu: 500m
+    cpu: 700m
     memory: 356Mi
 
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 3
-    maxUnavailable: 1
+    maxUnavailable: 0
 
 namespace:
   enabled: true
@@ -52,28 +52,30 @@ resourceQuota:
   enabled: false
   name: quota-with-limits
   hard:
-    replicas: "100"
-    requestsCpu: "1"
-    requestsMemory: "4Gi"
-    limitsCpu: "3"
-    limitsMemory: "8Gi"
+    replicas: '100'
+    requestsCpu: '1'
+    requestsMemory: 200Mi
+    limitsCpu: '2'
+    limitsMemory: 500Mi
+    services: '5'
+    secrets: '5'
 
 limitRange:
   enabled: false
   name: limit-range
   container:
     max:
-      cpu: "2"
-      memory: "2Gi"
+      cpu: 1
+      memory: 1Gi
     min:
-      cpu: "800m"
-      memory: "500Mi"
+      cpu: 600m
+      memory: 500Mi
     default:
-      cpu: "1"
-      memory: "1Gi"
+      cpu: 600m
+      memory: 500Mi
     defaultRequest:
-      cpu: "500m"
-      memory: "500Mi"
+      cpu: 500m
+      memory: 100Mi
 
 
 livenessProbe:

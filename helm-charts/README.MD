@@ -17,7 +17,7 @@
  helm template future-deployment backend/ -f backend/values-future.yaml > deployment-future.yaml
  helm template prod-deployment backend/ -f backend/values-prod.yaml > deployment-prod.yaml
 
- # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]
+ # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]=>::
  # QA Environment
  ![img_10.png](img_10.png)
  # Dev Environment
@@ -53,16 +53,6 @@
  kubectl explain httpscaledobject.spec
  kubectl explain httpscaledobject.spec.scaleTargetRef
  kubectl get crd | grep http
-
-
-
- # List all Helm releases
- helm list -a
- helm uninstall backend-dev-realese backend-future-realese backend-prod-realese backend-qa-realese
-
- # Install a Helm chart with custom values [Deployment]
- helm install <chart-name> <chart-location> -f values-nginx.yml 
- helm uninstall chart-name
 
 
 helm template dev-template ./backend -f ./backend/values-qa.yaml -n database-api
@@ -203,3 +193,136 @@ kubectl get httpscaledobject -n qa -w
 # Helm kustomization:
 Install kustomize:- curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash 
 ![img_9.png](img_9.png)
+
+# KUBERNETES AZURE SECRETS ENCRYPTION: -> Create Azure Key-Vault and Secret
+-->
+az keyvault create — name “aksdemocluster-kv” — resource-group “aksdemo-rg” — location australiaeast
+az keyvault secret set — vault-name “aksdemocluster-kv” — name “mysql-password” — value “Test123”
+
+# Enable Secrets Store CSI Driver support
+az aks enable-addons --addons azure-keyvault-secrets-provider --name aksdemocluster --resource-group aksdemocluster-rg
+# Verify the Secrets Store CSI Driver installation
+kubectl get pods -n kube-system -l ‘app in (secrets-store-csi-driver, secrets-store-provider-azure)’
+# Verify system-assigned identity on VMs : Verify that your virtual machine scale set or availability set nodes have their own system-assigned identity:
+az vmss identity show -g MC_aksdemocluster-rg_aksdemocluster_australiaeast -n aks-agentpool-32528728-vmss -o yaml
+az vm identity show -g <resource group> -n <vm name> -o yaml
+# Assigns Permissions:->  To grant your identity permissions that enable it to read your key vault and view its contents, run the following commands:
+# set policy to access secrets in your key vault
+az keyvault set-policy -n <keyvault-name> — secret-permissions get — spn <identity-principal-id>
+
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: azure-keyvault-provider
+spec:
+  provider: azure
+  parameters:
+    useVMManagedIdentity: "true"
+    usePodIdentity: "false"
+    keyvaultName: "my-keyvault"
+    objects: |
+      array:
+        - |
+          objectName: "my-secret"
+          objectType: secret
+          tenantId: "your-tenant-id"
+---
+# encryption-config.yaml head -c 32 /dev/urandom | base64
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+      - secrets
+    providers:
+      - aescbc:
+        keys:
+          - name: key1
+            secret: <BASE64-ENCODED-32-BYTE-KEY>
+      - identity: {}
+----
+
+ # Azure storage CSI Dynamic Allocation [ StorageClass | Pvc | PV | Azure Blob Storage ]
+ # -> To enable the driver on an existing cluster, include the --enable-blob-driver parameter with the az aks update command as shown in the following example: 
+ az aks update --enable-blob-driver --name myAKSCluster --resource-group myResourceGroup
+ az aks update
+
+ # PVC → StorageClass → CSI Driver → Cloud Disk/File (Auto)
+ # Types Of StorageClasses
+ disk.csi.azure.com → Azure Disk == MySQL on Azure Disk
+ file.csi.azure.com → Azure File == Frontend on Azure File
+ blob.csi.azure.com → Azure Blob == BackEnd on Azure Blob
+
+ # By Default it's Enabled : You can check below CLI Commends
+ kubectl get csidrivers
+ kubectl get pods -n kube-system | grep csi
+
+
+
+![img_12.png](img_12.png)
+ # Types of Provisioning:
+ Static Provisioning: You create PVs manually, and bind PVCs explicitly.
+ Dynamic Provisioning: Kubernetes automatically provisions storage using a StorageClass
+
+
+---
+# Cert Manager:
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-skanth306-shop
+  namespace: argocd
+spec:
+  secretName: my-wild-card-tls
+  renewBefore: 240h
+  dnsNames:
+  - '*.skanth306.shop'
+  - "skanth306.shop"
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-dns
+spec:
+  acme:
+  email: skanth306@gmail.com
+  # profile: tlsserver
+  server: https://acme-staging-v02.api.letsencrypt.org/directory
+  privateKeySecretRef:
+     name: letsencrypt-dns-key
+# https://github.com/snowdrop/godaddy-webhook
+    solvers:
+    - selector:
+        dnsZones:
+        - 'skanth306.shop'
+      dns01:
+        webhook:
+          config:
+            apiKeySecretRef:
+              key: api-key
+              name: godaddy-api-key-secret
+            production: false
+            ttl: 600
+          groupName: acme.skanth306.shop
+          solverName: godaddy
+# Add a single challenge solver, HTTP01 using nginx
+    # - http01:
+    #     ingress:
+    #       ingressClassName: nginx
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: godaddy-api-key-secret
+type: Opaque
+stringData:
+  api-key: <GODADDY_API_KEY:GODADDY_SECRET_KEY>
+---
+
+
+ # NOTES:
+ You do NOT need to create a database Deployment in Kubernetes if you are using a managed database (RDS / Azure SQL / Cloud SQL)
+

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-azfileshare-pods
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: azurefile-sc
+  azureFile:
+    secretName: azure-storage-secret
+    shareName: stateshare
+    readOnly: false
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=0
+    - gid=0
+  persistentVolumeReclaimPolicy: Retain

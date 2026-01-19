@@ -1,0 +1,14 @@
+  {{- if .Values.serviceAccount.enabled }}
+ apiVersion: storage.k8s.io/v1
+ kind: StorageClass
+ metadata:
+   name: backend-azure-blob
+ provisioner: blob.csi.azure.com
+ parameters:
+   containerName: backend-data
+   protocol: fuse
+ reclaimPolicy: Delete
+ volumeBindingMode: Immediate
+{{- end }}
+
+---

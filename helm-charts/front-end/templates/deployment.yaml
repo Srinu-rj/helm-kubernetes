@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.deploymentName }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "frontend" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "frontend" .| nindent 6 }}
+  replicas: {{ .Values.app.replicaCount }}
+  strategy:
+    type: { { .Values.strategy.type } }
+    rollingUpdate:
+      maxSurge: { { .Values.strategy.rollingUpdate.maxSurge } }
+      maxUnavailable: { { .Values.strategy.rollingUpdate.maxUnavailable } }
+  template:
+    metadata:
+      labels:
+        {{- include "frontend" .| nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Values.image.containerName }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.image.containerPort }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+
+---

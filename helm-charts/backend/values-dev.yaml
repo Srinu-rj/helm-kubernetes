@@ -97,7 +97,6 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-
 securityContext: {}
 # capabilities:
 #   drop:

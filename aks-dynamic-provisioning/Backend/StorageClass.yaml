@@ -1,0 +1,33 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: backend-azure-blob
+provisioner: blob.csi.azure.com
+parameters:
+  containerName: backend-data
+  protocol: fuse
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: backend-azure-blob
+  resources:
+    requests:
+      storage: 50Gi
+---
+volumeMounts:
+  - name: backend-storage
+    mountPath: /app/data
+
+volumes:
+  - name: backend-storage
+    persistentVolumeClaim:
+      claimName: backend-pvc
+
+---

@@ -1,0 +1,16 @@
+ {{- if .Values.PersistentVolumeClaim.enabled}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.PersistentVolumeClaim.name }}
+  namespace: {{ .Values.namespace.name }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: frontend-azure-file
+  resources:
+    requests:
+      storage: 10Gi
+       {{- end }}
+
+---

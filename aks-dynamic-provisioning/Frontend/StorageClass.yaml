@@ -1,0 +1,34 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: frontend-azure-file
+provisioner: file.csi.azure.com
+parameters:
+  skuName: Standard_LRS
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frontend-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: frontend-azure-file
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+volumeMounts:
+  - name: frontend-storage
+    mountPath: /usr/share/nginx/html
+
+volumes:
+  - name: frontend-storage
+    persistentVolumeClaim:
+      claimName: frontend-pvc
+
+---
