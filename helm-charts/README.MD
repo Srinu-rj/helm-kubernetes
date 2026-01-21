@@ -22,8 +22,8 @@
  ![img_10.png](img_10.png)
  # Dev Environment
  # Prod Environment
- helm install backend-qa-realese backend/ --values backend/values-qa.yaml 
- helm install backend-dev-realese backend/ --values backend/values-dev.yaml 
+ helm install backend-qa-realese backend/ --values backend/values-qa.yaml
+ helm install backend-dev-realese backend/ --values backend/values-dev.yaml
  helm install backend-future-realese backend/ --values backend/values-future.yaml 
  helm install backend-prod-realese backend/ --values backend/values-prod.yaml 
 
@@ -54,6 +54,24 @@
  kubectl explain httpscaledobject.spec.scaleTargetRef
  kubectl get crd | grep http
 
+# https://medium.com/@jamesbordane57/haproxy-ingress-controller-kubernetes-installation-configuration-best-practices-e4f4e225989c
+# HAProxy Ingress Controller:
+# -> is a lightweight, standalone controller that uses HAProxy as the reverse proxy.  It focuses on high-performance L7 routing, SSL termination, and robust TCP/L4 capabilities, with configuration driven by Ingress resources and annotations
+![img_13.png](img_13.png)
+![img_14.png](img_14.png)
+
+# Option A: Using Helm
+helm repo add haproxy-ingress https://haproxytech.github.io/helm-charts
+helm repo update
+
+# Option B: Using YAML Manifests [ best ]
+kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/refs/heads/master/deploy/haproxy-ingress.yaml
+kubectl get pods --namespace haproxy-controller
+kubectl get service --namespace haproxy-controller
+curl http://172.16.51.8:30337/ -H 'Host: hello-world.example.com'
+
+
+#==============================================
 
 helm template dev-template ./backend -f ./backend/values-qa.yaml -n database-api
 

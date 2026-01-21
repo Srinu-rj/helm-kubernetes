@@ -6,6 +6,11 @@ metadata:
   labels:
     {{- include "app-label" . | nindent 4 }}
 spec:
+  # TODO -> Pod-level securityContext
+  securityContext:
+    runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+    readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
+    runAsUser: {{ .Values.securityContext.runAsUser }}
   selector:
     matchLabels:
       {{- include "app-label" . | nindent 6 }}

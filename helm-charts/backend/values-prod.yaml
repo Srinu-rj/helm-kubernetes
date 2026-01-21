@@ -60,6 +60,7 @@ resourceQuota:
     services: '5'
     secrets: '5'
 
+
 limitRange:
   enabled: false
   name: limit-range
@@ -100,18 +101,24 @@ tolerations: []
 affinity: {}
 
 
-securityContext: {}
-# capabilities:
-#   drop:
-#   - ALL
-# readOnlyRootFilesystem: true
-# runAsNonRoot: true
-# runAsUser: 1000
+securityContext:
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  runAsUser: 1000
+  privileged: false
 
 ingress:
   enabled: true
-  className: nginx-example
-  name: app-ingress
+  className: haproxy
+  name: ha-proxy-app
+  annotations:
+    haproxy.org/ingress.class: "haproxy"
+    haproxy.org/rate-limit-requests: "10"
+    haproxy.org/rate-limit-period: 1s
+    haproxy.org/rate-limit-status-code: "429"
+    haproxy.org/rate-limit-size: "1000000"
+    qos.projectcalico.org/egressBandwidth: 100M
+    qos.projectcalico.org/egressBurst: 200M
 
 
 networkPolicy:
