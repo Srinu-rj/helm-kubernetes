@@ -14,7 +14,7 @@ app:
 
 image:
   repository: srinu641/spring-application-k8s
-  tag: v1.02
+  tag: v3.0
   pullPolicy: IfNotPresent
 
 container:
@@ -33,11 +33,56 @@ strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 3
-    maxUnavailable: 1
+    maxUnavailable: 0
 
 namespace:
   enabled: true
   name: qa-namespace
+
+
+HaProxy:
+  enabled: true
+  name: ha-proxy-deployment
+  ingressClassName: haproxy
+  rules:
+     host: viveja.com
+  annotations:
+    haproxy.org/ingress.class: "haproxy"
+    haproxy.org/rate-limit-requests: "10"
+    haproxy.org/rate-limit-period: 1s
+    haproxy.org/rate-limit-status-code: "429"
+    haproxy.org/rate-limit-size: "1000000"
+    haproxy.org/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    qos.projectcalico.org/egressBandwidth: 100M
+    qos.projectcalico.org/egressBurst: 200M
+
+MinPodDisruptionBudget:
+  enabled: true
+  name: backend-pdb-min
+  minAvailable: 3
+
+MaxPodDisruptionBudget:
+  enabled: true
+  name: backend-pdb-max
+  maxUnavailable: 7
+
+NamespaceFinalizers:
+  enabled: false
+  name: namespace-finalizers
+
+CornJob:
+  enabled: false
+  name: cron-job-back-end
+  schedule: "0 7 * * *"        # Daily at 7 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 3
+  restartPolicy: OnFailure
+  env:
+    runcronjob: "true"
+
 
 hpa:
   enabled: true
@@ -78,12 +123,21 @@ limitRange:
 
 livenessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /actuator/health/liveness
+    port: 1199
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
 readinessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /actuator/health/readiness
+    port: 1199
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
 
 serviceAccount:
   create: false
@@ -127,27 +181,6 @@ volumes:
 volumeMounts:
   - name: tmp
     mountPath: /tmp
-
-
-ingress:
-  enabled: true
-  className: haproxy
-  name: ha-proxy-app
-  annotations:
-    haproxy.org/ingress.class: "haproxy"
-    haproxy.org/rate-limit-requests: "10"
-    haproxy.org/rate-limit-period: 1s
-    haproxy.org/rate-limit-status-code: "429"
-    haproxy.org/rate-limit-size: "1000000"
-    qos.projectcalico.org/egressBandwidth: 100M
-    qos.projectcalico.org/egressBurst: 200M
-
-HaProxy:
-  enabled: true
-  name: ha-proxy-deployment
-
-
-
 
 networkPolicy:
   enabled: true

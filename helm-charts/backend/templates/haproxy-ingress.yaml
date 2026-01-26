@@ -1,0 +1,23 @@
+ {{- if .Values.HaProxy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.HaProxy.name }}
+  namespace: {{ .Values.namespace.name }}
+  annotations:
+    kubernetes.io/ingress.class: "haproxy"
+spec:
+  ingressClassName: {{ .Values.HaProxy.ingressClassName }}
+  rules:
+    - host: {{ .Values.HaProxy.rules.host }} # TODO WILD CARD DOMAIN -> "*.domain.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.service.serviceApp }}
+                port:
+                  number: 1199
+                   {{- end }}
+---

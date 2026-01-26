@@ -1,0 +1,25 @@
+ {{- if .Values.CornJob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.CornJob.name }}
+  namespace: {{ .Values.namespace.name }}
+spec:
+  schedule: {{ .Values.CornJob.schedule }}  # Runs daily at 7 AM
+  concurrencyPolicy: {{ .Values.CornJob.concurrencyPolicy }}  # Prevents overlapping executions
+  successfulJobsHistoryLimit: {{ .Values.CornJob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.CornJob.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: {{ .Values.container.containerName }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" #TODO ->< IMAGE NAME AND TAGS
+              imagePullPolicy: {{ .Values.restartPolicy }}
+              env:
+                - name: runcronjob
+                  value: "true"
+          restartPolicy: {{ .Values.CornJob.restartPolicy }}
+           {{- end }}
+---

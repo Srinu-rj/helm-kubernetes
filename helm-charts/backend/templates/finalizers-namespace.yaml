@@ -1,0 +1,14 @@
+ {{- if .Values.NamespaceFinalizers.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.NamespaceFinalizers.name }}
+  namespace: {{ .Values.namespace.name }}
+  finalizers:
+    - kubernetes
+data:
+  env: prod
+status:
+  phase: Active
+   {{- end }}
+---

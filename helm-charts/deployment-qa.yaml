@@ -1,0 +1,154 @@
+---
+# Source: backend/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qa-namespace
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: qa-deployment
+    meta.helm.sh/release-namespace: default
+---
+# Source: backend/templates/network-policy.yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: application-network-policy
+  namespace: qa-namespace
+spec:
+  podSelector:
+    app: app-label
+    env: dev
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# Source: backend/templates/max-pbd.yml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb-max
+  namespace: qa-namespace
+spec:
+  maxUnavailable: 7
+  selector:
+    matchLabels:
+      app: app-label
+      env: dev
+---
+# Source: backend/templates/min-pbd.yml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb-min
+  namespace: qa-namespace
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: app-label
+      env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
+---
+# Source: backend/templates/service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: qa-namespace
+  labels:
+    app: app-label
+    env: dev
+spec:
+  type: NodePort
+  selector:
+    app: app-label
+    env: dev
+  ports:
+    - name: http
+      port: 80
+      targetPort: 1199
+---
+# Source: backend/templates/deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back-end
+  namespace: qa-namespace
+  labels:
+    app: app-label
+    env: dev
+spec:
+  # TODO -> Pod-level securityContext
+  securityContext:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    runAsUser: 1000
+  selector:
+    matchLabels:
+      app: app-label
+      env: dev
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: app-label
+        env: dev
+    spec:
+      containers:
+        - name: springbootcontainer
+          image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 1199
+          resources:
+            requests:
+              cpu: "400m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "356Mi"
+---
+# Source: backend/templates/haproxy-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ha-proxy-deployment
+  namespace: qa-namespace
+  annotations:
+    kubernetes.io/ingress.class: "haproxy"
+spec:
+  ingressClassName: haproxy
+  rules:
+    - host: viveja.com # TODO WILD CARD DOMAIN -> "*.domain.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 1199
+---
+# Source: backend/templates/keda-hpa.yaml
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: backend-hpa
+  namespace: qa-namespace
+spec:
+  hosts:
+    - myhost.com
+  targetPendingRequests: 1
+  scaleTargetRef:
+    service: backend-service
+    port: 1199
+  replicas:
+    min: 1
+    max: 25

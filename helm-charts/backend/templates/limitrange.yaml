@@ -21,3 +21,4 @@ spec:
         memory: {{ .Values.limitRange.container.defaultRequest.memory | quote }}
            {{- end }}
 
+---

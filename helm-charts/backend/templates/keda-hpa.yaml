@@ -10,7 +10,7 @@ spec:
   targetPendingRequests: 1
   scaleTargetRef:
     service: backend-service
-    port: 80
+    port: 1199
   replicas:
     min: {{ .Values.hpa.minReplicas }}
     max: {{ .Values.hpa.maxReplicas }}

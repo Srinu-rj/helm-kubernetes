@@ -10,7 +10,7 @@ spec:
   selector:
     {{- include "app-label" . | nindent 4 }}
   ports:
-    - protocol: TCP
+    - name: http
       port: 80
       targetPort: {{ .Values.service.targetPort }}
 

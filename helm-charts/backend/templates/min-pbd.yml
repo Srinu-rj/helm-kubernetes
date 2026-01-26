@@ -1,0 +1,13 @@
+ {{- if .Values.MinPodDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.MinPodDisruptionBudget.name }}
+  namespace: {{ .Values.namespace.name }}
+spec:
+  minAvailable: {{ .Values.MinPodDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "app-label" . | nindent 6 }} #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
+       {{- end }}
+---
