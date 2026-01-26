@@ -4,6 +4,7 @@ deploymentName: back-end
 image_port_number: 1199
 
 service:
+  enabled: false
   serviceApp: backend-service
   types: NodePort
   targetPort: 1199

@@ -50,24 +50,32 @@ spec:
       app: app-label
       env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
 ---
-# Source: backend/templates/service.yml
-apiVersion: v1
-kind: Service
+# Source: backend/templates/serviceconnection.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
-  name: backend-service
+   name: backend-azure-blob-aks-storage
+provisioner: blob.csi.azure.com
+allowVolumeExpansion: true
+parameters:
+  skuName: Premium_LRS
+  azureStorageAuthType: ManagedIdentity
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+# Source: backend/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aks-dynamic-pvc
   namespace: qa-namespace
-  labels:
-    app: app-label
-    env: dev
 spec:
-  type: NodePort
-  selector:
-    app: app-label
-    env: dev
-  ports:
-    - name: http
-      port: 80
-      targetPort: 1199
+  accessModes:
+    - ReadWriteMany
+  storageClassName: backend-azure-blob-aks-storage
+  resources:
+    requests:
+      storage: 50Gi
 ---
 # Source: backend/templates/deployment.yml
 apiVersion: apps/v1

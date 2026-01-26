@@ -39,6 +39,24 @@ namespace:
   enabled: true
   name: qa-namespace
 
+PersistentVolumeClaim:
+  enabled: true
+  name: aks-dynamic-pvc
+  storage: 50Gi
+
+#TODO -> ReadWriteMany access mode, allowing multiple Pods across different nodes to access the same data.
+#TODO ->  file.csi.azure.com: This driver is better suited for shared application data and stateful applications requiring file-level sharing
+serviceAccount:
+  enabled: true
+  automount: true
+  annotations: {}
+  name: backend-azure-blob-aks-storage
+  provisioner:  blob.csi.azure.com #TODO -> file.csi.azure.com
+  reclaimPolicy: Delete #TODO -> Retain
+  volumeBindingMode: WaitForFirstConsumer #TODO -> Immediate | WaitForFirstConsumer: Binding is delayed until a pod that uses the PVC is scheduled
+  skuName: Premium_LRS
+  azureStorageAuthType: ManagedIdentity
+  allowVolumeExpansion: true
 
 HaProxy:
   enabled: true
@@ -138,12 +156,6 @@ readinessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
-
-serviceAccount:
-  create: false
-  automount: true
-  annotations: { }
-  name: ""
 
 nodeSelector: { }
 tolerations: [ ]
