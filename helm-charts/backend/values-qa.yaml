@@ -13,18 +13,28 @@ annotations:
   secret.reloader.stakater.com/reload: "test-secret"
 
 configMap:
-  enabled: database-configmap
-  name: sql
+  enabled: false
+  name: database-configmap
   annotations:
     reloader.stakater.com/auto: "true" #✅
     reloader.stakater.com/match: "true"
 
+#TODO ==> AKS DATABASE KEY VAULT STO
 secrets:
-  enabled: false
-  name: database-secrets
-  annotations:
-    reloader.stakater.com/auto: "true" #✅
-    reloader.stakater.com/match: "true"
+  enabled: true
+  name: db-azure-key-vault
+  provider: azure
+  tenantId: "736437467324673467346374"
+  keyVaultName: "7364374673246734rerer346374"  #TODO -> Name of your Azure Key Vault.
+  managedIdentity:
+    clientId: "73643746732467346f54374"
+  KeySecrets:
+    - objectName: "db-password" #TODO -> Name of the secret in Key Vault.
+      objectType: "secret"      #TODO -> secret, key, or cert.
+    - objectName: "db-username"
+      objectType: "secret"
+
+
 
 service:
   serviceApp: backend-service
@@ -207,15 +217,6 @@ securityContext:
   readOnlyRootFilesystem: true
   runAsUser: 1000
   privileged: false
-
-
-volumes:
-  - name: tmp
-    emptyDir: {}
-
-volumeMounts:
-  - name: tmp
-    mountPath: /tmp
 
 networkPolicy:
   enabled: true

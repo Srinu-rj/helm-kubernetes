@@ -19,8 +19,8 @@
  # Template generation for different environments [Important]*
 ![img_6.png](img_6.png) [QA] [Dev] [Prod] [Future]
  # BACK END
- helm template dev-deployment backend/ -f backend/values-dev.yaml > deployment-dev.yaml
  helm template qa-deployment backend/ -f backend/values-qa.yaml > deployment-qa.yaml
+ helm template dev-deployment backend/ -f backend/values-dev.yaml > deployment-dev.yaml
  helm template future-deployment backend/ -f backend/values-future.yaml > deployment-future.yaml
  helm template prod-deployment backend/ -f backend/values-prod.yaml > deployment-prod.yaml
  # FRONT END 

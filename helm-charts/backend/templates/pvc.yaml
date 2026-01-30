@@ -12,4 +12,5 @@ spec:
     requests:
       storage: {{ .Values.PersistentVolumeClaim.storage }}
        {{- end }}
+
 ---

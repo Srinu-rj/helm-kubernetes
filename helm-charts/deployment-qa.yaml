@@ -160,3 +160,25 @@ spec:
   replicas:
     min: 1
     max: 25
+---
+# Source: backend/templates/aks-secrets.yaml
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: db-azure-key-vault
+  namespace: qa-namespace
+  spec:
+    provider: azure
+    parameters:
+      useVMManagedIdentity: "true"
+      userAssignedIdentityID: 73643746732467346f54374
+      keyvaultName: 7364374673246734rerer346374
+      tenantId: 736437467324673467346374
+      objects: |
+        array:
+          - |
+            objectName: db-password  
+            objectType: secret
+          - |
+            objectName: db-username  
+            objectType: secret
