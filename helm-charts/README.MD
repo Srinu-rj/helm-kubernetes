@@ -10,12 +10,24 @@
  helm get manifest backend-rle
  helm get manifest backend-rle > backend-qa-manifest.yaml
 
+ kubectl get namespace qa-namespace -o json > qa-namespace .json
+ kubectl patch <resource> <name> -p '{"metadata":{"finalizers":[]}}' --type=merge   
+ kubectl patch namespace qa-namespace -p '{"metadata":{"finalizers":[]}}' --type=merge
+ kubectl get apiservice
+ kubectl delete apiservice apiservice-name
+
  # Template generation for different environments [Important]*
 ![img_6.png](img_6.png) [QA] [Dev] [Prod] [Future]
+ # BACK END
  helm template dev-deployment backend/ -f backend/values-dev.yaml > deployment-dev.yaml
  helm template qa-deployment backend/ -f backend/values-qa.yaml > deployment-qa.yaml
  helm template future-deployment backend/ -f backend/values-future.yaml > deployment-future.yaml
  helm template prod-deployment backend/ -f backend/values-prod.yaml > deployment-prod.yaml
+ # FRONT END 
+ helm template dev-deployment frontend/ -f backend/values-dev.yaml > deployment-dev.yaml
+ helm template qa-deployment frontend/ -f backend/values-qa.yaml > deployment-qa.yaml
+ helm template future-deployment frontend/ -f backend/values-future.yaml > deployment-future.yaml
+ helm template prod-deployment frontend/ -f backend/values-prod.yaml > deployment-prod.yaml
 
  # Install a Helm chart with custom values [QA] [Dev] [Prod] [Future]=>::
  # QA Environment
@@ -25,13 +37,23 @@
  helm install backend-qa-realese backend/ --values backend/values-qa.yaml
  helm install backend-dev-realese backend/ --values backend/values-dev.yaml
  helm install backend-future-realese backend/ --values backend/values-future.yaml 
- helm install backend-prod-realese backend/ --values backend/values-prod.yaml 
-
+ helm install backend-prod-realese backend/ --values backend/values-prod.yaml
  # Upgrade a Helm chart with custom values [QA] [Dev] [Prod] [Future]
  helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml 
  helm upgrade backend-dev-realese backend/ --values backend/values-dev.yaml  
  helm upgrade backend-prod-realese backend/ --values backend/values-prod.yaml  
  helm upgrade backend-future-realese backend/ --values backend/values-future.yaml  
+
+ # FRONT END DEPLOYMENTS
+ helm install frontend-qa-realese front-end/ --values front-end/values-qa.yaml
+ helm install frontend-dev-realese frontend/ --values front-end/values-dev.yaml
+ helm install frontend-future-realese frontend/ --values frontend/values-future.yaml
+ helm install frontend-prod-realese frontend/ --values frontend/values-prod.yaml
+ # Upgrade a Helm chart with custom values [QA] [Dev] [Prod] [Future]
+ helm upgrade frontend-qa-realese frontend/ --values frontend/values-qa.yaml
+ helm upgrade frontend-dev-realese frontend/ --values frontend/values-dev.yaml  
+ helm upgrade frontend-prod-realese frontend/ --values frontend/values-prod.yaml  
+ helm upgrade frontend-future-realese frontend/ --values frontend/values-future.yaml
 
  # Verify the deployments
  kubectl get all -n qa-namespace
@@ -45,7 +67,22 @@
  helm uninstall backend-feture-realese
  helm uninstall backend-prod-realese
 
- kubectl delete namespace qa-namespace
+ # ConfigMap and Secret Data Reloading Made Simple with Reloader:: -> https://seifrajhi.github.io/blog/reloader-configmap-secret/
+ install Reloader using helm:
+ -
+ # Using Helm
+ helm repo add stakater https://stakater.github.io/stakater-charts
+ helm repo update
+ helm install reloader stakater/reloader # To watch CM/secrets in all namespaces
+ helm install reloader stakater/reloader --set reloader.watchGlobally=false --namespace NAMESPACENAME # To watch CM/Secrets in one namespace
+
+ 
+ # Using Vanilla Manifests
+ kubectl apply -f https://raw.githubusercontent.com/stakater/Reloader/master/deployments/kubernetes/reloader.yaml
+ kubectl apply -k https://github.com/stakater/Reloader/deployments/kubernetes
+![img_15.png](img_15.png)
+ 
+
 
  k describe replicaset  back-end-7f974867f6 -n dev-namespace
 
@@ -61,8 +98,9 @@
 ![img_14.png](img_14.png)
 
 # Option A: Using Helm
-helm repo add haproxy-ingress https://haproxytech.github.io/helm-charts
+helm repo add haproxytech https://haproxytech.github.io/helm-charts
 helm repo update
+helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress --create-namespace --namespace haproxy-controller
 
 # Option B: Using YAML Manifests [ best ]
 kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/refs/heads/master/deploy/haproxy-ingress.yaml
@@ -70,49 +108,6 @@ kubectl get pods --namespace haproxy-controller
 kubectl get service --namespace haproxy-controller
 curl http://172.16.51.8:30337/ -H 'Host: hello-world.example.com'
 
-
-#==============================================
-
-helm template dev-template ./backend -f ./backend/values-qa.yaml -n database-api
-
-✅ List all releases (current namespace)
-helm list
-
-✅ List releases in a specific namespace
-helm list -n database-api
-
-✅ List releases in ALL namespaces
-helm list -A
-
-✅ Get details of a release
-helm status dev-template -n database-api
-
-✅ Get release history (revisions)
-helm history dev-template -n database-api
-
-📄 2️⃣ How to Get Helm Templates (Rendered YAML)
-
-✅ Render all templates (dry run)
-helm template dev-template ./backend -n database-api
-
-✅ Render with values file
-helm template dev-template ./backend -f values-qa.yaml -n database-api
-
-✅ Debug rendered templates
-helm template dev-template ./backend -f values-qa.yaml --debug
-
-✅ Render only one template file
-helm template dev-template ./backend -f values-qa.yaml --show-only templates/deployment.yaml
-
-🔍 3️⃣ How to See Templates of an Installed Release
-✅ Get rendered manifests from cluster
-helm get manifest dev-template -n database-api
-
-✅ Get values used by release
-helm get values dev-template -n database-api
-
-✅ Get full release info
-helm get all dev-template -n database-api
 
 # HELM DEPLOYMENT IMAGES
 ![img.png](img.png)

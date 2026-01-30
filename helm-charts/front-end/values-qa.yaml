@@ -6,17 +6,17 @@ app:
 service:
   name: frontend-service
   type: ClusterIP
-  port: 5173
+  port: 80
 
 namespace:
   create: true
-  name: qa-namespace
+  name: fr-namespace
 
 image:
-  repository: nginx
+  repository: mahesh032/angular-web-app
   pullPolicy: IfNotPresent
-  tag: ""
-  containerPort: 5173
+  tag: 68
+  containerPort: 80
   containerName: frontendContainer
 
 strategy:

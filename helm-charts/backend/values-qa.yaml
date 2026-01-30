@@ -3,6 +3,29 @@ restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
 
+#TODO -> Deployment Annotations :: https://seifrajhi.github.io/blog/reloader-configmap-secret/
+#TODO -> You shouldn’t have to manually restart pods when a ConfigMap or Secret changes.
+#TODO ->  Reloader is a Kubernetes controller that automatically triggers rolling upgrades for Deployments, StatefulSets, DaemonSets, and other workloads when their associated ConfigMaps or Secrets change, eliminating the need for manual pod restarts.
+annotations:
+  reloader.stakater.com/auto: "true"   #✅
+  reloader.stakater.com/search: "true" # This annotation tells Reloader to only trigger rolling upgrades when changes occur in ConfigMaps or Secrets that are explicitly annotated with reloader.stakater.com/match: “true”
+  configmap.reloader.stakater.com/reload: "foo-configmap" # Specifying specific ConfigMap or Secret to trigger rolling upgrade
+  secret.reloader.stakater.com/reload: "test-secret"
+
+configMap:
+  enabled: database-configmap
+  name: sql
+  annotations:
+    reloader.stakater.com/auto: "true" #✅
+    reloader.stakater.com/match: "true"
+
+secrets:
+  enabled: false
+  name: database-secrets
+  annotations:
+    reloader.stakater.com/auto: "true" #✅
+    reloader.stakater.com/match: "true"
+
 service:
   serviceApp: backend-service
   types: NodePort

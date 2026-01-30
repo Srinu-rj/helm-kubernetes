@@ -11,10 +11,10 @@ spec:
       {{- include "frontend" .| nindent 6 }}
   replicas: {{ .Values.app.replicaCount }}
   strategy:
-    type: { { .Values.strategy.type } }
+    type: {{ .Values.strategy.type }}
     rollingUpdate:
-      maxSurge: { { .Values.strategy.rollingUpdate.maxSurge } }
-      maxUnavailable: { { .Values.strategy.rollingUpdate.maxUnavailable } }
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
   template:
     metadata:
       labels:
