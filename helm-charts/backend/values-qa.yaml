@@ -104,6 +104,8 @@ HaProxy:
     haproxy.org/rate-limit-status-code: "429"
     haproxy.org/rate-limit-size: "1000000"
     haproxy.org/ssl-redirect: "true"
+    haproxy-ingress.github.io/canary: "true"
+    haproxy-ingress.github.io/canary-weight: "30"
     nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     qos.projectcalico.org/egressBandwidth: 100M

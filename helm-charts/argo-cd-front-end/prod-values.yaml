@@ -1,0 +1,23 @@
+application:
+  name: front-end-prod
+  namespace: argocd
+  project: default
+
+source:
+  repoURL: https://github.com/Srinu-rj/helm-kubernetes
+  targetRevision: master
+  path: helm-charts/front-end
+  helm:
+    valueFiles:
+      - values-prod.yaml
+
+destination:
+  server: https://kubernetes.default.svc
+  namespace: prod-namespace
+
+syncPolicy:
+  automated:
+    prune: true
+    selfHeal: true
+  syncOptions:
+    - CreateNamespace=true

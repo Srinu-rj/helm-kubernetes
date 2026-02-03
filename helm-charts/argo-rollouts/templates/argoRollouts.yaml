@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: backend
+  namespace: spring
+spec:
+  replicas: 10
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: { duration: 20m }
+        - analysis:
+            templates:
+              - templateName: error-rate
+        - setWeight: 40
+        - pause: { duration: 15m }
+        - setWeight: 60
+        - pause: { duration: 20m }
+        - analysis:
+            templates:
+              - templateName: latency
+        - setWeight: 80
+        - pause: { duration: 10m }
+        - setWeight: 100
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: myrepo/backend:v2
+          ports:
+            - containerPort: 8080
+
+---
+
