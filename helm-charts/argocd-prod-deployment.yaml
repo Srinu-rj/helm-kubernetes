@@ -1,0 +1,75 @@
+---
+# Source: argocd/templates/dev-environment.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backend-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Srinu-rj/helm-kubernetes
+    targetRevision: master
+    path: helm-charts/backend
+    helm:
+      valueFiles:
+         -values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod-namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+        -CreateNamespace=true
+---
+# Source: argocd/templates/prod-environment.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backend-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Srinu-rj/helm-kubernetes
+    targetRevision: master
+    path: helm-charts/backend
+    helm:
+      valueFiles:
+          -values-prod.yaml
+destination:
+  server: https://kubernetes.default.svc
+  namespace: prod-namespace
+syncPolicy:
+  automated:
+    prune: true
+    selfHeal: true
+  syncOptions:
+      -values-prod.yaml
+---
+# Source: argocd/templates/qa-environment.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backend-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Srinu-rj/helm-kubernetes
+    targetRevision: master
+    path: helm-charts/backend
+    helm:
+      valueFiles:
+          -values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod-namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+        -CreateNamespace=true
