@@ -1,7 +1,7 @@
 apiVersion: velero.io/v1
 kind: Restore
 metadata:
-  name: <unique_name>   # Unique name for this restore job
+  name: {{ .Values.Restore.name }}   # Unique name for this restore job
   namespace: openshift-adp # Velero’s own namespace (often 'velero' or 'openshift-adp')
 spec:
   backupName: <name_of_the_backup_to_restore>  # Name of the backup you want to restore S3 , Azure , GCP

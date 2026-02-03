@@ -1,7 +1,7 @@
 apiVersion: velero.io/v1
 kind: Backup
 metadata:
-  name: <unique_name>
+  name: {{}}
   namespace: openshift-adp
 spec:
   storageLocation: <backup_storage_location>

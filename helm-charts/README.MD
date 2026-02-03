@@ -1,14 +1,9 @@
  # Create and delete [ Helm chart ]
-
-[//]: # ( helm create backend)
-
-[//]: # ( helm install backend-rle backend)
-
-[//]: # ( helm upgrade backend-rle backend)
-
-[//]: # ( helm uninstall backend-rle)
-
-[//]: # ( k get pods --all-namespaces)
+ helm create backend
+ helm install backend-rle backend
+ helm upgrade backend-rle backend
+ helm uninstall backend-rle
+ k get pods --all-namespaces
 
  alias k=kubectl
  # Manifest and Template 

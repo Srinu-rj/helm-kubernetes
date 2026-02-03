@@ -1,22 +1,142 @@
+## Role to manage deployments
 #apiVersion: rbac.authorization.k8s.io/v1
 #kind: Role
 #metadata:
-#  name: pod-reader
-##  namespace: role-namespace
+#  name: dev-deployment-role
+#  namespace: dev
+#  labels:
+#    role-group: dev
 #rules:
-#  - apiGroups: [""] # "" indicates the core API group
-#    verbs: ["get", "watch", "list"]
-#    resources: ["pods", "pods/log"]
-##    resourceNames: ["nginx"]
+#  - apiGroups: [ "apps" ]
+#    resources: [ "deployments" ]
+#    verbs: [ "get", "list", "create", "update", "delete" ]
+#
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: Role
+#metadata:
+#  name: dev-service-role
+#  namespace: dev
+#  labels:
+#    role-group: dev
+#rules:
+#  - apiGroups: [""]
+#    resources: ["services"]
+#    verbs: ["get", "list", "create", "update", "delete"]
+#
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: Role
+#metadata:
+#  name: dev-logs-role
+#  namespace: dev
+#  labels:
+#    role-group: dev
+#rules:
+#  - apiGroups: [""]
+#    resources: ["pods/log"]
+#    verbs: ["get", "list"]
+#
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: ClusterRole
+#metadata:
+#  name: dev-aggregated-role
+#  labels:
+#    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+#aggregationRule:
+#  clusterRoleSelectors:
+#    - matchLabels:
+#        role-group: dev
+#
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: ClusterRoleBinding
+#metadata:
+#  name: dev-team-binding
+#subjects:
+#  - kind: User
+#    name: alice
+#    apiGroup: rbac.authorization.k8s.io
+#roleRef:
+#  kind: ClusterRole
+#  name: dev-aggregated-role
+#  apiGroup: rbac.authorization.k8s.io
+#
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: RoleBinding
+#metadata:
+#  name: pod-reader-binding
+#  namespace: development
+#subjects:
+#  - kind: User
+#    name: developer
+#    apiGroup: rbac.authorization.k8s.io
+#roleRef:
+#  kind: Role
+#  name: pod-reader
+#  apiGroup: rbac.authorization.k8s.io
+#---
+
+
 ---
-# 🚀 Example Role: pod-reader-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: pod-reader
-  namespace: role-based-namespace
+  name: pod-manager
 rules:
   - apiGroups: [""]
     resources: ["pods"]
+    verbs: ["get", "list", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-manager-binding
+subjects:
+  - kind: User
+    name: developer
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-viewer
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
     verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-viewer-binding
+subjects:
+  - kind: Group
+    name: ops-team
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: node-viewer
+  apiGroup: rbac.authorization.k8s.io
+---
+#apiVersion: certificates.k8s.io/v1
+#kind: CertificateSigningRequest
+#metadata:
+#  name: anvesh
+#spec:
+#  request: MIICVjCCAT4CAQAwETEPMA0GA1UEAwwGYW52ZXNoMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3vt5M1ORyC9ReM/8r7CADvUPp4t5m5R9Lxj9NZnVlBTP61L3vXtao7rZuB5LcdRJGiIb5NBA+aVDE1iK2ra7itnB8VKMWs/kwd+l8+K9JS4wTGWCYqcjU5iV/J4Ht588kLne9l6Cfa96Pnbgx7+C5KSM+mN5pKObw7r+b9lMrdL+sBQFyIe2zavl4WOD1/QA8nnUA61GnuV3RBr2AVwS8o1oJVvETzktek6DCRaQXlTgT+e7peTlZ9gPt8TJyj8YSoa1ycJt0rut7tcs96+zSAN3qJVfNFCVmivxl6+/P6JifFA8v8lmaNrbTAaKx9I6LAytaNKORvhe7AXebPEDLwIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAC3Rv5viq4tw+9UV36I4zwa+7uMeqzWCr2K2yQPzd+1+jgVulaBESLSHnjhH2ShBjmfRZRiaZx3YoJtNPejWl1wteBHZOnEJzqVS7s9uHTqqM6QRCgc0pdZS1owCkUfWmvfCddNrGjl0Ar8FwSpYJfJL8QRR2KUunTlM5vJI4ITjex5FGGYFVxfq3u5wrCd20VHjXQ+GJFCX+aWg9bM1gyYxTIiL8ji4b56sgp1dlcwCmxUcHz3c0NJxNhpd8YlJzH+2QJIxt0OV60oIn19ZHocYkLGcvmIEQfVU7b0L0voNKJDvPXT7Xy1tLJD8YyWnzmu2oO8OzRI0f49M2PpI5bA=
+#  signerName: kubernetes.io/kube-apiserver-client
+#  expirationSeconds: 86400  # one day
+#  usages:
+#    - digital signature
+#    - key encipherment
+#    - client auth
+
 ---
