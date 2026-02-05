@@ -1,23 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: backend
-  namespace: spring
+  name: {{ .Values.rollout.name }}
+  namespace: {{ .Values.rollout.namespace }}
 spec:
-  replicas: 10
+  replicas: {{ .Values.rollout.namespace }}
   strategy:
     canary:
       steps:
         - setWeight: 20
         - pause: { duration: 20m }
-        - analysis:
+        - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
             templates:
               - templateName: error-rate
         - setWeight: 40
         - pause: { duration: 15m }
         - setWeight: 60
         - pause: { duration: 20m }
-        - analysis:
+        - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
             templates:
               - templateName: latency
         - setWeight: 80
@@ -25,17 +25,17 @@ spec:
         - setWeight: 100
   selector:
     matchLabels:
-      app: backend
+      {{- include "app-label" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: backend
+        {{- include "app-label" . | nindent 12 }}
     spec:
       containers:
-        - name: backend
-          image: myrepo/backend:v2
+        - name: {{ .Values.container.name }}
+          image: "{{ .Values.container.image }}:{{ .Values.container.tag }}"
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.container.port }}
 
 ---
 

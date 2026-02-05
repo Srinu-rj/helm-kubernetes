@@ -13,17 +13,17 @@ spec:
       valueFiles:
         {{- range .Values.source.helm.valueFiles }}
           -{{ . }}
-          {{- end }}
-  destination:
-    server: {{ .Values.destination.server }}
-    namespace: {{ .Values.destination.namespace }}
-  syncPolicy:
-    automated:
-      prune: {{ .Values.syncPolicy.automated.prune }}
-      selfHeal: {{ .Values.syncPolicy.automated.selfHeal }}
-    syncOptions:
-      {{- range .Values.syncPolicy.syncOptions }}
-        -{{ . }}
         {{- end }}
+destination:
+  server: {{ .Values.destination.server }}
+  namespace: {{ .Values.destination.namespace }}
+syncPolicy:
+  automated:
+    prune: {{ .Values.syncPolicy.automated.prune }}
+    selfHeal: {{ .Values.syncPolicy.automated.selfHeal }}
+  syncOptions:
+    {{- range .Values.source.helm.valueFiles }}
+      -{{ . }}
+    {{- end }}
 
 ---

@@ -1,29 +1,30 @@
 app:
+  deploymentName: front-end-deployment
   replicaCount: 4
-  deploymentName: frent-end-deployment
   env: front-end
 
 service:
+  enabled: true
   name: frontend-service
   type: ClusterIP
   port: 80
 
 namespace:
-  create: true
-  name: fr-namespace
+  enabled: true
+  name: front-qa-namespace
 
 image:
-  repository: mahesh032/angular-web-app
+  repository: vaidehisatpute/clonedocker
   pullPolicy: IfNotPresent
-  tag: 68
+  tag: 115
   containerPort: 80
-  containerName: frontendContainer
+  containerName: frontendcontainer
 
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 3
-    maxUnavailable: 1
+    maxUnavailable: 0
 
 imagePullSecrets: []
 nameOverride: ""
@@ -45,15 +46,6 @@ podLabels: {}
 
 podSecurityContext: {}
 
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 resources:
    limits:
      cpu: 100m
@@ -62,22 +54,9 @@ resources:
      cpu: 100m
      memory: 128Mi
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
 
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+
+
 
 
 

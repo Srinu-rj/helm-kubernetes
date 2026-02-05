@@ -1,0 +1,30 @@
+ {{- if .Values.secretsKey.enabled }}
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: {{ .Values.secretsKey.name }}
+  namespace: {{ .Values.namespace.name }}
+  spec:
+    provider: {{ .Values.secretsKey.provider }}
+    parameters:
+      usePodIdentity: "false"
+      useVMManagedIdentity: "true"
+      userAssignedIdentityID: {{ .Values.secretsKey.managedIdentity.clientId }}
+      keyvaultName: {{ .Values.secretsKey.keyVaultName }}
+      tenantId: {{ .Values.secretsKey.tenantId }}
+      objects: | 
+        array:
+        {{- range .Values.secretsKey.KeySecrets }}
+          - |
+            objectName: {{ .objectName }}  
+            objectType: {{ .objectType }} 
+        {{- end }}
+    secretObjects:
+      - data:
+          - key: "password"
+            objectName: "db-password"
+          - key: "username"
+            objectName: "db-username"
+        secretName: "db-credentials"
+        type: Opaque  
+         {{- end }}

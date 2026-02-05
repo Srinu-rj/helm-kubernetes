@@ -1,0 +1,70 @@
+---
+# Source: front-end/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: front-qa-namespace
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: frontend-qa-deployment
+    meta.helm.sh/release-namespace: default
+---
+# Source: front-end/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: front-qa-namespace
+  labels:
+    app: frontend
+    env: front-end
+spec:
+  selector:
+    app: frontend
+    env: front-end
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      protocal: http
+  type: ClusterIP
+---
+# Source: front-end/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-end-deployment
+  namespace: front-qa-namespace
+  labels:
+    app: frontend
+    env: front-end
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+      env: front-end
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: frontend
+        env: front-end
+    spec:
+      containers:
+        - name: frontendContainer
+          image: "vaidehisatpute/clonedocker:115"
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

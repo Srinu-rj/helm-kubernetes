@@ -1,0 +1,30 @@
+veleroNamespace: openshift-adp
+
+backup:
+  name: velero-backup
+  storageLocation: default
+  includeClusterResources: true
+  snapshotVolumes: true
+  namespaces:
+    - event-manager-ns
+    - event-gateway-ns
+
+restore:
+  enabled: true
+  name: velero-restore
+  backupName: velero-backup
+  existingResourcePolicy: update
+  restorePVs: true
+  namespaces:
+    - qa-namespace-backend
+    - dev-namespace-backend
+    - prod-namespace-backend
+
+labels:
+  components:
+    - catalogsource
+    - operatorgroup
+    - subscription
+    - eventendpointmanagement
+    - eventgateway
+  backupRequiredLabel: required

@@ -1,8 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: application-deploy
-  namespace: backend
+  name: application-deploy-qq
   labels:
     app: app-label
     version: v1.0.1
@@ -25,7 +24,7 @@ spec:
     spec:
       containers:
         - name: spring-application-container
-          image: srinu641/spring-application-k8s:v1.02
+          image: srinu641/spring-application-k8s:V2.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 1199
@@ -40,8 +39,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: application-service
-  namespace: backend
+  name: application-service-qq
   labels:
     app: app-label
     version: v1.0.1

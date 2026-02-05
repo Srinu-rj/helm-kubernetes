@@ -13,7 +13,7 @@ source:
 
 destination:
   server: https://kubernetes.default.svc
-  namespace: qa-namespace
+  namespace: qa-argo-front-end-namespace
 
 syncPolicy:
   automated:

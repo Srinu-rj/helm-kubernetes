@@ -1,23 +1,23 @@
 app:
   replicaCount: 4
-  deploymentName: frent-end-deployment
+  deploymentName: front-end-deployment
   env: front-end
 
 service:
   name: frontend-service
   type: ClusterIP
-  port: 5173
+  port: 80
 
 namespace:
-  create: true
-  name: dev-namespace
+  create: false
+  name: front-dev-namespace
 
 image:
-  repository: nginx # Need to change front-end application docker image
+  repository: vaidehisatpute/clonedocker
   pullPolicy: IfNotPresent
-  tag: ""
-  containerPort: 5173
-  containerName: frontendContainer
+  tag: 115
+  containerPort: 80
+  containerName: frontend-container
 
 strategy:
   type: RollingUpdate
@@ -52,15 +52,15 @@ securityContext: {}
   #   - ALL
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
-  # runAsUser: 1000
+# runAsUser: 1000
 
 resources:
-   limits:
-     cpu: 100m
-     memory: 128Mi
-   requests:
-     cpu: 100m
-     memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 livenessProbe:
   httpGet:

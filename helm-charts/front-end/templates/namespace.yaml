@@ -1,4 +1,4 @@
- {{- if .Values.namespace.enabled }}
+ {{- if .Values.namespace.name }}
 apiVersion: v1
 kind: Namespace
 metadata:

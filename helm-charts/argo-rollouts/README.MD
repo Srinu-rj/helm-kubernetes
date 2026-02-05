@@ -1,9 +1,28 @@
+helm template argo-roll-out-dev-deployment argo-rollouts/ -f argo-rollouts/dev-values.yaml > argo-roll-out-dev-deployment.yaml
+helm template argo-roll-out-qa-deployment argo-rollouts/ -f argo-rollouts/qa-values.yaml > argo-roll-out-qa-deployment.yaml
+helm template argo-roll-out-prod-deployment argo-rollouts/ -f argo-rollouts/prod-values.yaml > argo-roll-out-prod-deployment.yaml
+
+
+helm install argo-cd-rollout-dev-realese argo-rollouts/ --values argo-rollouts/dev-values.yaml
+helm install argo-cd-rollout-qa-realese argo-rollouts/ --values argo-rollouts/qa-values.yaml
+helm install argo-cd-rollout-prod-realese argo-rollouts/ --values argo-rollouts/prod-values.yaml
+
+helm upgrade argo-cd-rollout-dev-realese argo-rollouts/ --values argo-rollouts/dev-values.yaml
+helm upgrade argo-cd-rollout-qa-realese argo-rollouts/ --values argo-rollouts/qa-values.yaml
+helm upgrade argo-cd-rollout-prod-realese argo-rollouts/ --values argo-rollouts/prod-values.yaml
+
+helm uninstall argo-cd-rollout-dev-realese
+helm uninstall argo-cd-rollout-qa-realese
+helm uninstall argo-cd-rollout-prod-realese
+
+helm template prod-deployment argocd/ -f argocd/prod-values.yaml | grep "# Source"
+
+
+
+
 =======================
 ARGO CD
 =======================
-[--create-namespace ]
-Install ArgoCD using Helm (for Kubernetes)::
-
 sudo snap install helm --classic
 kubectl create ns argocd
 helm repo add argo https://argoproj.github.io/argo-helm
@@ -16,25 +35,25 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.pas
 🚀 Install Argo Rollouts Dashboard UI
 ==============================================
 kubectl create namespace argo-rollouts
-kubectl apply -n argo-rollouts \
--f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-kubectl apply -n argo-rollouts \
--f https://github.com/argoproj/argo-rollouts/releases/latest/download/dashboard-install.yaml
-
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/dashboard-install.yaml
 kubectl port-forward svc/argo-rollouts-dashboard -n argo-rollouts 3100:3100
-
 kubectl argo rollouts dashboard
 
 ==============================================
 ✅ Argo CD Canary Deployment (Using Argo Rollouts)::
 ==============================================
-
+# 
 1️⃣ Canary Deployment (Most Used)::
 strategy:
  canary:
    steps:
      - setWeight: 20
      - pause: { duration: 60s }
+    #TODO  -> “Before moving to the next canary step, run a health check based on metrics.”✅ Inside Canary Steps
+     - analysis: 
+         templates:
+           - templateName: error-rate     
      - setWeight: 50
      - pause: { duration: 120s }
      - setWeight: 100
@@ -55,3 +74,31 @@ strategy:
  rollingUpdate:
    maxSurge: 1
    maxUnavailable: 0
+---
+# 👉 Helm ArgoCd Rollout analysis template
+# 1️⃣ Single AnalysisTemplate (Most Common):: ✔ Simple validation (latency, error rate, availability)
+- analysis:
+  templates:
+  - templateName: latency
+
+# 2️⃣ Multiple AnalysisTemplates (Parallel Analysis):==> ✔ Validate multiple metrics at once
+- analysis:
+  templates:
+  - templateName: error-rate
+  - templateName: latency
+  - templateName: availability
+
+# 3️⃣ AnalysisTemplate with Arguments (Dynamic Values):: --> ✔ Same template, different thresholds per app/env
+- analysis:
+    templates:
+      - templateName: latency
+        arguments:
+          - name: maxLatency
+            value: "400"
+
+# 5️⃣ ClusterAnalysisTemplate (Cluster-wide):: --> 
+- analysis:
+    templates:
+      - templateName: global-latency
+        clusterScope: true
+
