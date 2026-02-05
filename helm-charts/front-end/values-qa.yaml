@@ -17,7 +17,7 @@ image:
   repository: vaidehisatpute/clonedocker
   pullPolicy: IfNotPresent
   tag: 115
-  containerPort: 80
+  containerPort: 3000
   containerName: frontendcontainer
 
 strategy:
