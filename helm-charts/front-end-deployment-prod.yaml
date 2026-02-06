@@ -3,11 +3,11 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: front-dev-namespace
+  name: front-prod-namespace
   labels:
     app.kubernetes.io/managed-by: Helm
   annotations:
-    meta.helm.sh/release-name: frontend-dev-deployment
+    meta.helm.sh/release-name: frontend-prod-deployment
     meta.helm.sh/release-namespace: default
 ---
 # Source: front-end/templates/service.yaml
@@ -15,7 +15,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
-  namespace: front-dev-namespace
+  namespace: front-prod-namespace
   labels:
     app: frontend
     env: front-end
@@ -35,7 +35,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-end-deployment
-  namespace: front-dev-namespace
+  namespace: front-prod-namespace
   labels:
     app: frontend
     env: front-end

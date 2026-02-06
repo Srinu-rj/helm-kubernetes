@@ -16,7 +16,7 @@ spec:
          -values-prod.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: prod-namespace
+    namespace: prod-argo-front-end-namespace
   syncPolicy:
     automated:
       prune: true

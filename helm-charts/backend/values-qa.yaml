@@ -76,7 +76,7 @@ strategy:
 
 namespace:
   enabled: true
-  name: qa-namespace
+  name: back-end-qa-namespace
 
 PersistentVolumeClaim:
   enabled: true

@@ -16,7 +16,7 @@ spec:
           -values-qa.yaml
 destination:
   server: https://kubernetes.default.svc
-  namespace: qa-namespace
+  namespace: qa-argo-back-end-namespace
 syncPolicy:
   automated:
     prune: true

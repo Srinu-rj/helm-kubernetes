@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.rollout.name }}
+  namespace: {{ .Values.rollout.namespace }}
+spec:
+  replicas: {{ .Values.rollout.replicas }}
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: { duration: 20m }
+        - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
+            templates:
+              - templateName: error_rate
+              - templateName: latency
+              - templateName: pod-restarts
+
+        - setWeight: 40
+        - pause: { duration: 15m }
+        - analysis:
+            templates:
+              - templateName: cpu-usage
+              - templateName: memory-usage
+              - templateName: dependency-health
+
+        - setWeight: 60
+        - pause: { duration: 20m }
+        - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
+            templates:
+              - templateName: latency
+              - templateName: success-rate
+
+        - setWeight: 80
+        - pause: { duration: 10m }
+
+        - setWeight: 100
+  selector:
+    matchLabels:
+      {{- include "app-label" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app-label" . | nindent 12 }}
+    spec:
+      containers:
+        - name: {{ .Values.container.name }}
+          image: "{{ .Values.container.image }}:{{ .Values.container.tag }}"
+          ports:
+            - containerPort: {{ .Values.container.port }}
+
+---
+

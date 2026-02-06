@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.rollout.name }}
   namespace: {{ .Values.rollout.namespace }}
 spec:
-  replicas: {{ .Values.rollout.namespace }}
+  replicas: {{ .Values.rollout.replicas }}
   strategy:
     canary:
       steps:
@@ -12,16 +12,28 @@ spec:
         - pause: { duration: 20m }
         - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
             templates:
-              - templateName: error-rate
+              - templateName: error_rate
+              - templateName: latency
+              - templateName: pod-restarts
+
         - setWeight: 40
         - pause: { duration: 15m }
+        - analysis:
+            templates:
+              - templateName: cpu-usage
+              - templateName: memory-usage
+              - templateName: dependency-health
+
         - setWeight: 60
         - pause: { duration: 20m }
         - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
             templates:
               - templateName: latency
+              - templateName: success-rate
+
         - setWeight: 80
         - pause: { duration: 10m }
+
         - setWeight: 100
   selector:
     matchLabels:

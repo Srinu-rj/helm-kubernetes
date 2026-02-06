@@ -16,7 +16,7 @@ spec:
          -values-dev.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: dev-namespace
+    namespace: dev-argo-front-end-namespace
   syncPolicy:
     automated:
       prune: true

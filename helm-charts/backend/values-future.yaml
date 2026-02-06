@@ -3,6 +3,45 @@ restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
 
+#TODO -> Deployment Annotations :: https://seifrajhi.github.io/blog/reloader-configmap-secret/
+#TODO -> You shouldn’t have to manually restart pods when a ConfigMap or Secret changes.
+#TODO ->  Reloader is a Kubernetes controller that automatically triggers rolling upgrades for Deployments, StatefulSets, DaemonSets, and other workloads when their associated ConfigMaps or Secrets change, eliminating the need for manual pod restarts.
+annotations:
+  reloader.stakater.com/auto: "true"   #✅
+  reloader.stakater.com/search: "true" # This annotation tells Reloader to only trigger rolling upgrades when changes occur in ConfigMaps or Secrets that are explicitly annotated with reloader.stakater.com/match: “true”
+  configmap.reloader.stakater.com/reload: "foo-configmap" # Specifying specific ConfigMap or Secret to trigger rolling upgrade
+  secret.reloader.stakater.com/reload: "test-secret"
+
+configMap:
+  enabled: false
+  name: database-configmap
+  annotations:
+    reloader.stakater.com/auto: "true" #✅
+    reloader.stakater.com/match: "true"
+
+#TODO ==> AKS DATABASE KEY VAULT STO :: ==> “Fetch secrets from Azure Key Vault and make them available to Pods, and also sync them into a Kubernetes Secret.”
+secretsKey:
+  enabled: true
+  name: db-azure-key-vault
+  provider: azure
+  tenantId: "736437467324673467346374"
+  keyVaultName: "7364374673246734rerer346374"  #TODO -> Name of your Azure Key Vault.
+  managedIdentity:
+    clientId: "73643746732467346f54374"
+  KeySecrets:
+    - objectName: "db-password" #TODO -> Name of the secret in Key Vault.
+      objectType: "secret"      #TODO -> secret, key, or cert.
+    - objectName: "db-username"
+      objectType: "secret"
+  secretObjects:
+    secretName: db-credentials
+    type: Opaque
+  secrets:
+    - objectName: db-password
+      key: password
+    - objectName: db-username
+      key: username
+
 service:
   serviceApp: backend-service
   types: NodePort
@@ -14,7 +53,7 @@ app:
 
 image:
   repository: srinu641/spring-application-k8s
-  tag: v1.02
+  tag: v3.0
   pullPolicy: IfNotPresent
 
 container:
@@ -33,11 +72,76 @@ strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 3
-    maxUnavailable: 1
+    maxUnavailable: 0
 
 namespace:
   enabled: true
-  name: future-namespace
+  name: back-end-future-namespace
+
+PersistentVolumeClaim:
+  enabled: true
+  name: aks-dynamic-pvc
+  storage: 50Gi
+
+#TODO -> ReadWriteMany access mode, allowing multiple Pods across different nodes to access the same data.
+#TODO ->  file.csi.azure.com: This driver is better suited for shared application data and stateful applications requiring file-level sharing
+serviceAccount:
+  enabled: true
+  automount: true
+  annotations: {}
+  name: backend-azure-blob-aks-storage
+  provisioner:  blob.csi.azure.com #TODO -> file.csi.azure.com
+  reclaimPolicy: Delete #TODO -> Retain
+  volumeBindingMode: WaitForFirstConsumer #TODO -> Immediate | WaitForFirstConsumer: Binding is delayed until a pod that uses the PVC is scheduled
+  skuName: Premium_LRS
+  azureStorageAuthType: ManagedIdentity
+  allowVolumeExpansion: true
+
+HaProxy:
+  enabled: true
+  name: ha-proxy-deployment
+  ingressClassName: haproxy
+  rules:
+    host: viveja.com
+  annotations:
+    haproxy.org/ingress.class: "haproxy"
+    haproxy.org/rate-limit-requests: "10"
+    haproxy.org/rate-limit-period: 1s
+    haproxy.org/rate-limit-status-code: "429"
+    haproxy.org/rate-limit-size: "1000000"
+    haproxy.org/ssl-redirect: "true"
+    haproxy-ingress.github.io/canary: "true"
+    haproxy-ingress.github.io/canary-weight: "30"
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    qos.projectcalico.org/egressBandwidth: 100M
+    qos.projectcalico.org/egressBurst: 200M
+
+MinPodDisruptionBudget:
+  enabled: true
+  name: backend-pdb-min
+  minAvailable: 3
+
+MaxPodDisruptionBudget:
+  enabled: true
+  name: backend-pdb-max
+  maxUnavailable: 7
+
+NamespaceFinalizers:
+  enabled: false
+  name: namespace-finalizers
+
+CornJob:
+  enabled: true
+  name: cron-job-back-end
+  schedule: "0 7 * * *"        # Daily at 7 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 3
+  restartPolicy: OnFailure
+  env:
+    runcronjob: "true"
+
 
 hpa:
   enabled: true
@@ -78,45 +182,49 @@ limitRange:
 
 livenessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /actuator/health/liveness
+    port: 1199
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
 readinessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /actuator/health/readiness
+    port: 1199
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
 
-serviceAccount:
-  create: false
-  automount: true
-  annotations: {}
-  name: ""
+nodeSelector: { }
+tolerations: [ ]
+affinity: { }
 
-volumes: []
-volumeMounts: []
-nodeSelector: {}
-tolerations: []
-affinity: {}
-
+initContainers:
+  - name: wait-for-mysql
+    image: mysql:8.0
+    command:
+      - sh
+      - -c
+      - |
+        echo "Waiting for MySQL to be ready..."
+        until mysqladmin ping \
+          -h "$DB_HOST" \
+          -u "$DB_USER" \
+          -p"$DB_PASSWORD" \
+          --silent; do
+          echo "MySQL not ready, retrying..."
+          sleep 5
+        done
+        echo "MySQL is ready!"
 
 securityContext:
   runAsNonRoot: true
   readOnlyRootFilesystem: true
   runAsUser: 1000
   privileged: false
-
-ingress:
-  enabled: true
-  className: haproxy
-  name: ha-proxy-app
-  annotations:
-    haproxy.org/ingress.class: "haproxy"
-    haproxy.org/rate-limit-requests: "10"
-    haproxy.org/rate-limit-period: 1s
-    haproxy.org/rate-limit-status-code: "429"
-    haproxy.org/rate-limit-size: "1000000"
-    qos.projectcalico.org/egressBandwidth: 100M
-    qos.projectcalico.org/egressBurst: 200M
-
 
 networkPolicy:
   enabled: true

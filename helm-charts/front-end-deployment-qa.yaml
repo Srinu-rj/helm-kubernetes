@@ -57,10 +57,10 @@ spec:
         env: front-end
     spec:
       containers:
-        - name: frontendContainer
+        - name: frontendcontainer
           image: "vaidehisatpute/clonedocker:115"
           ports:
-            - containerPort: 80
+            - containerPort: 3000
           resources:
             requests:
               cpu: 100m

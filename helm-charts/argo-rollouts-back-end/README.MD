@@ -1,19 +1,19 @@
-helm template argo-roll-out-dev-deployment argo-rollouts/ -f argo-rollouts/dev-values.yaml > argo-roll-out-dev-deployment.yaml
-helm template argo-roll-out-qa-deployment argo-rollouts/ -f argo-rollouts/qa-values.yaml > argo-roll-out-qa-deployment.yaml
-helm template argo-roll-out-prod-deployment argo-rollouts/ -f argo-rollouts/prod-values.yaml > argo-roll-out-prod-deployment.yaml
+helm template argo-roll-out-back-end-dev-deployment argo-rollouts-back-end/ -f argo-rollouts-back-end/dev-values.yaml > argo-roll-out-dev-back-end-deployment.yaml
+helm template argo-roll-out-back-end-qa-deployment argo-rollouts-back-end/ -f argo-rollouts-back-end/qa-values.yaml > argo-roll-out-qa-back-end-deployment.yaml
+helm template argo-roll-out-back-end-prod-deployment argo-rollouts-back-end/ -f argo-rollouts-back-end/prod-values.yaml > argo-roll-out-prod-back-end-deployment.yaml
 
 
-helm install argo-cd-rollout-dev-realese argo-rollouts/ --values argo-rollouts/dev-values.yaml
-helm install argo-cd-rollout-qa-realese argo-rollouts/ --values argo-rollouts/qa-values.yaml
-helm install argo-cd-rollout-prod-realese argo-rollouts/ --values argo-rollouts/prod-values.yaml
+helm install argo-cd-rollout-dev-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/dev-values.yaml
+helm install argo-cd-rollout-qa-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/qa-values.yaml
+helm install argo-cd-rollout-prod-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/prod-values.yaml
 
-helm upgrade argo-cd-rollout-dev-realese argo-rollouts/ --values argo-rollouts/dev-values.yaml
-helm upgrade argo-cd-rollout-qa-realese argo-rollouts/ --values argo-rollouts/qa-values.yaml
-helm upgrade argo-cd-rollout-prod-realese argo-rollouts/ --values argo-rollouts/prod-values.yaml
+helm upgrade argo-cd-rollout-dev-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/dev-values.yaml
+helm upgrade argo-cd-rollout-qa-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/qa-values.yaml
+helm upgrade argo-cd-rollout-prod-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/prod-values.yaml
 
-helm uninstall argo-cd-rollout-dev-realese
-helm uninstall argo-cd-rollout-qa-realese
-helm uninstall argo-cd-rollout-prod-realese
+helm uninstall argo-cd-rollout-dev-realese-back-end
+helm uninstall argo-cd-rollout-qa-realese-back-end
+helm uninstall argo-cd-rollout-prod-realese-back-end
 
 helm template prod-deployment argocd/ -f argocd/prod-values.yaml | grep "# Source"
 
@@ -84,9 +84,15 @@ strategy:
 # 2️⃣ Multiple AnalysisTemplates (Parallel Analysis):==> ✔ Validate multiple metrics at once
 - analysis:
   templates:
-  - templateName: error-rate
-  - templateName: latency
-  - templateName: availability
+    - templateName: error-rate
+    - templateName: latency
+    - templateName: pod-restarts
+    - templateName: availability
+    - templateName: memory-usage
+      restarts == 0
+    - templateName: health-check
+    - templateName: dependency-health
+    - templateName: business-metric
 
 # 3️⃣ AnalysisTemplate with Arguments (Dynamic Values):: --> ✔ Same template, different thresholds per app/env
 - analysis:
@@ -101,4 +107,8 @@ strategy:
     templates:
       - templateName: global-latency
         clusterScope: true
+
+- analysis:
+  templates:
+  - templateName: success_rate > 99.5%
 

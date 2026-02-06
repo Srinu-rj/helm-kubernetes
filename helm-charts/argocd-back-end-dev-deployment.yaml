@@ -3,7 +3,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: backend-qa
+  name: backend-dev
   namespace: argocd
 spec:
   project: default
@@ -13,13 +13,13 @@ spec:
     path: helm-charts/backend
     helm:
       valueFiles:
-          -values-qa.yaml
+          -values-dev.yaml
 destination:
   server: https://kubernetes.default.svc
-  namespace: qa-namespace
+  namespace: dev-argo-back-end-namespace
 syncPolicy:
   automated:
     prune: true
     selfHeal: true
   syncOptions:
-      -values-qa.yaml
+      -values-dev.yaml
