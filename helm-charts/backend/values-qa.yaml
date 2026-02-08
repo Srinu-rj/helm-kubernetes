@@ -1,4 +1,4 @@
-replicas: 5
+replicas: 8
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -120,19 +120,19 @@ HaProxy:
 MinPodDisruptionBudget:
   enabled: true
   name: backend-pdb-min
-  minAvailable: 3
+  minAvailable: 2
 
 MaxPodDisruptionBudget:
   enabled: true
   name: backend-pdb-max
-  maxUnavailable: 7
+  maxUnavailable: 4
 
 NamespaceFinalizers:
   enabled: false
   name: namespace-finalizers
 
 CornJob:
-  enabled: true
+  enabled: false
   name: cron-job-back-end
   schedule: "0 7 * * *"        # Daily at 7 AM
   concurrencyPolicy: Forbid
