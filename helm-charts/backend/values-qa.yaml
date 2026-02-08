@@ -224,12 +224,12 @@ securityContext:
   privileged: false
 
 networkPolicy:
-  enabled: true
+  enabled: false
   name: application-network-policy
   podSelector:
     matchLabels:
       app: app-label
-  ingress: []
-  egress: []
+  ingress:
+  egress:
 
 ---
