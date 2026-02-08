@@ -25,6 +25,7 @@ kubectl get all -n qa-namespace
 kubectl get all -n dev-namespace
 kubectl get all -n future-namespace
 kubectl get all -n prod-namespace
+k get HTTPScaledObject -n back-end-qa-namespace
 
 # HA PROXY
 # Option A: Using Helm
@@ -59,3 +60,10 @@ kubectl get crd | grep httpscaledobjects
 
 #🟢 Step 3: Confirm API version (important):
 kubectl get crd httpscaledobjects.http.keda.sh -o yaml | grep version -A5
+
+
+✅ METHOD 3: hey (Best Tool for KEDA HTTP)
+sudo snap install hey
+
+hey -n 10000 -c 300 -H "Host: myhost.com" http://localhost:1199/home
+kubectl port-forward svc/backend-service 1199:80 -n back-end-qa-namespace

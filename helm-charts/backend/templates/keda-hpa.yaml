@@ -9,7 +9,10 @@ spec:
     - myhost.com
   targetPendingRequests: 1
   scaleTargetRef:
-    service: backend-service
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.deploymentName }}
+    service: {{ .Values.service.serviceApp }}
     port: 1199
   replicas:
     min: {{ .Values.hpa.minReplicas }}
