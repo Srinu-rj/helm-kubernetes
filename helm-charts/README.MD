@@ -164,7 +164,7 @@ helm repo update
 helm install keda kedacore/keda -n keda --create-namespace
 
 Verify:
-kubectl get pods -n keda
+watch kubectl get pods -n keda
 kubectl get crd | grep keda
 kubectl get crd | grep http
 

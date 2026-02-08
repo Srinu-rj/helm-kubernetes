@@ -21,7 +21,7 @@ configMap:
 
 #TODO ==> AKS DATABASE KEY VAULT STO :: ==> “Fetch secrets from Azure Key Vault and make them available to Pods, and also sync them into a Kubernetes Secret.”
 secretsKey:
-  enabled: true
+  enabled: false
   name: db-azure-key-vault
   provider: azure
   tenantId: "736437467324673467346374"
@@ -144,7 +144,7 @@ CornJob:
 
 
 hpa:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 25
   name: backend-hpa
@@ -233,8 +233,6 @@ networkPolicy:
     matchLabels:
       app: app-label
   ingress:
-    enabled: true
   egress:
-    enabled: true
 
 ---

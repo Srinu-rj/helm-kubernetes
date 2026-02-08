@@ -11,9 +11,7 @@ spec:
     path: {{ .Values.source.path }}
     helm:
       valueFiles:
-        {{- range .Values.source.helm.valueFiles }}
-          -{{ . }}
-        {{- end }}
+        {{ .Values.source.helm.valueFiles }}
 destination:
   server: {{ .Values.destination.server }}
   namespace: {{ .Values.destination.namespace }}
@@ -22,8 +20,7 @@ syncPolicy:
     prune: {{ .Values.syncPolicy.automated.prune }}
     selfHeal: {{ .Values.syncPolicy.automated.selfHeal }}
   syncOptions:
-    {{- range .Values.source.helm.valueFiles }}
-      -{{ . }}
-    {{- end }}
+    {{- toYaml .Values.syncPolicy | nindent 4 }}
+
 
 ---

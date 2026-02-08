@@ -13,7 +13,7 @@ source:
 
 destination:
   server: https://kubernetes.default.svc
-  namespace: dev-argo-back-end-namespace
+  namespace: back-end-dev-namespace
 
 syncPolicy:
   automated:

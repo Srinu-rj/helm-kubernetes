@@ -26,3 +26,36 @@ kubectl get all -n dev-namespace
 kubectl get all -n future-namespace
 kubectl get all -n prod-namespace
 
+# HA PROXY
+# Option A: Using Helm
+helm repo add haproxytech https://haproxytech.github.io/helm-charts
+helm repo update
+helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress --create-namespace --namespace haproxy-controller
+
+# Option B: Using YAML Manifests [ best ]
+kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/refs/heads/master/deploy/haproxy-ingress.yaml
+kubectl get pods --namespace haproxy-controller
+kubectl get service --namespace haproxy-controller
+curl http://172.16.51.8:30337/ -H 'Host: hello-world.example.com'
+
+
+
+
+# KEDA HPA Autoscaling
+# 🟢 Step 1: Install KEDA core (if not already)
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda -n keda --create-namespace
+
+Verify:
+watch kubectl get pods -n keda
+kubectl get crd | grep keda
+kubectl get crd | grep http
+
+
+#🟢 Step 2: Install KEDA HTTP Add-on (THIS IS REQUIRED)
+helm install keda-http-addon kedacore/keda-add-ons-http -n keda
+kubectl get crd | grep httpscaledobjects
+
+#🟢 Step 3: Confirm API version (important):
+kubectl get crd httpscaledobjects.http.keda.sh -o yaml | grep version -A5

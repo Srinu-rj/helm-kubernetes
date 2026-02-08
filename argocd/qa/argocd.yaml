@@ -1,5 +1,3 @@
----
-# Source: argo-cd-back-end/templates/argo-cd-back-end.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -13,13 +11,14 @@ spec:
     path: helm-charts/backend
     helm:
       valueFiles:
-          -values-qa.yaml
-destination:
-  server: https://kubernetes.default.svc
-  namespace: default
-syncPolicy:
-  automated:
-    prune: true
-    selfHeal: true
-  syncOptions:
-      -values-qa.yaml
+        - values-qa.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: back-end-qa-namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
