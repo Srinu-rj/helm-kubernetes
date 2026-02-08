@@ -132,7 +132,7 @@ NamespaceFinalizers:
   name: namespace-finalizers
 
 CornJob:
-  enabled: false
+  enabled: true
   name: cron-job-back-end
   schedule: "0 7 * * *"        # Daily at 7 AM
   concurrencyPolicy: Forbid
@@ -143,14 +143,11 @@ CornJob:
     runcronjob: "true"
 
 
-hpa:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 25
-  name: backend-hpa
-
 keda:
   enabled: true
+  name: backend-hpa
+  minReplicas: 1
+  maxReplicas: 25
 
 resourceQuota:
   enabled: false
@@ -232,7 +229,7 @@ networkPolicy:
   podSelector:
     matchLabels:
       app: app-label
-  ingress:
-  egress:
+  ingress: []
+  egress: []
 
 ---

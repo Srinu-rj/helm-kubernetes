@@ -1,8 +1,8 @@
- {{- if (.Values.keda.enabled | default false) }}
+ {{- if .Values.keda.enabled  }}
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: {{ .Values.hpa.name }}
+  name: {{ .Values.keda.name }}
   namespace: {{ .Values.namespace.name }}
 spec:
   hosts:
@@ -15,8 +15,8 @@ spec:
     service: {{ .Values.service.serviceApp }}
     port: 1199
   replicas:
-    min: {{ .Values.hpa.minReplicas }}
-    max: {{ .Values.hpa.maxReplicas }}
+    min: {{ .Values.keda.minReplicas }}
+    max: {{ .Values.keda.maxReplicas }}
      {{- end }}
 ---
 
