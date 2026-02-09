@@ -1,50 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ .Values.application.name }}
-  namespace: {{ .Values.application.namespace }}
+  name: {{ .Values.appName }}-{{ .Values.env }}
+  namespace: {{ .Values.argoNamespace | default "argocd" }}
 spec:
-  project: {{ .Values.application.project }}
+  project: {{ .Values.project | default "default" }}
   source:
-    repoURL: {{ .Values.source.repoURL }}
-    targetRevision: {{ .Values.source.targetRevision }}
-    path: {{ .Values.source.path }}
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision | default "master" }}
+    path: {{ .Values.chartPath }}
     helm:
       valueFiles:
-        {{ .Values.source.helm.valueFiles }}
-destination:
-  server: {{ .Values.destination.server }}
-  namespace: {{ .Values.destination.namespace }}
-syncPolicy:
-  automated:
-    prune: {{ .Values.syncPolicy.automated.prune }}
-    selfHeal: {{ .Values.syncPolicy.automated.selfHeal }}
-  syncOptions:
-    {{- toYaml .Values.syncPolicy | nindent 4 }}
-
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: backend-qa
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/Srinu-rj/helm-kubernetes
-    targetRevision: master
-    path: helm-charts/backend
-    helm:
-      valueFiles:
-        - values-qa.yaml
+        - {{ .Values.helmValuesFile }}
   destination:
-    server: https://kubernetes.default.svc
-    namespace: back-end-qa-namespace
+    server: {{ .Values.destServer | default "https://kubernetes.default.svc" }}
+    namespace: {{ .Values.destNamespace }}
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: {{ .Values.syncPolicy.prune | default true }}
+      selfHeal: {{ .Values.syncPolicy.selfHeal | default true }}
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace= {{ .Values.syncPolicy.createNamespace | default true }}
+
 ---

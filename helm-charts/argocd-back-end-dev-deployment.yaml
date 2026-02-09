@@ -13,13 +13,13 @@ spec:
     path: helm-charts/backend
     helm:
       valueFiles:
-          -values-dev.yaml
-destination:
-  server: https://kubernetes.default.svc
-  namespace: dev-argo-back-end-namespace
-syncPolicy:
-  automated:
-    prune: true
-    selfHeal: true
-  syncOptions:
-      -values-dev.yaml
+        - values-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: back-end-dev-namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace= true

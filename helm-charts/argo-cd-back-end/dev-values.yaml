@@ -1,23 +1,17 @@
-application:
-  name: backend-dev
-  namespace: argocd
-  project: default
+appName: backend
+env: dev
+argoNamespace: argocd
+project: default
 
-source:
-  repoURL: https://github.com/Srinu-rj/helm-kubernetes
-  targetRevision: master
-  path: helm-charts/backend
-  helm:
-    valueFiles:
-      - values-dev.yaml
+repoURL: https://github.com/Srinu-rj/helm-kubernetes
+targetRevision: master
+chartPath: helm-charts/backend
+helmValuesFile: values-dev.yaml
 
-destination:
-  server: https://kubernetes.default.svc
-  namespace: back-end-dev-namespace
+destServer: https://kubernetes.default.svc
+destNamespace: back-end-dev-namespace
 
 syncPolicy:
-  automated:
-    prune: true
-    selfHeal: true
-  syncOptions:
-    - CreateNamespace=true
+  prune: true
+  selfHeal: true
+  createNamespace: true

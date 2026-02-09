@@ -1,23 +1,17 @@
-application:
-  name: backend-qa
-  namespace: argocd
-  project: default
+appName: backend
+env: qa
+argoNamespace: argocd
+project: default
 
-source:
-  repoURL: https://github.com/Srinu-rj/helm-kubernetes
-  targetRevision: master
-  path: helm-charts/backend
-  helm:
-    valueFiles:
-      - values-qa.yaml
+repoURL: https://github.com/Srinu-rj/helm-kubernetes
+targetRevision: master
+chartPath: helm-charts/backend
+helmValuesFile: values-qa.yaml
 
-destination:
-  server: https://kubernetes.default.svc
-  namespace: back-end-qa-namespace
+destServer: https://kubernetes.default.svc
+destNamespace: back-end-qa-namespace
 
 syncPolicy:
-  automated:
-    prune: true
-    selfHeal: true
-  syncOptions:
-    - CreateNamespace=true
+  prune: true
+  selfHeal: true
+  createNamespace: true

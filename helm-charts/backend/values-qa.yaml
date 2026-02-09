@@ -1,4 +1,4 @@
-replicas: 8
+replicas: 5
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -147,7 +147,7 @@ keda:
   enabled: true
   name: backend-hpa
   minReplicas: 1
-  maxReplicas: 25
+  maxReplicas: 10
 
 resourceQuota:
   enabled: false

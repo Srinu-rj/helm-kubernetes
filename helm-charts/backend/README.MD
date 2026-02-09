@@ -39,7 +39,22 @@ kubectl get pods --namespace haproxy-controller
 kubectl get service --namespace haproxy-controller
 curl http://172.16.51.8:30337/ -H 'Host: hello-world.example.com'
 
+# Calico on Kubernetes for Red Hat Enterprise Linux (RHEL)::
 
+helm repo add projectcalico https://docs.tigera.io/calico/charts
+helm repo update
+
+helm install calico projectcalico/tigera-operator \
+--namespace tigera-operator \
+--create-namespace \
+--version v3.31.3
+
+watch kubectl get pods -n tigera-operator
+kubectl get pods -n calico-system
+
+# METRICS SERVER
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml   
+kubectl get pods -n kube-system | grep metrics-server
 
 
 # KEDA HPA Autoscaling
@@ -47,6 +62,7 @@ curl http://172.16.51.8:30337/ -H 'Host: hello-world.example.com'
 helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
 helm install keda kedacore/keda -n keda --create-namespace
+
 
 Verify:
 watch kubectl get pods -n keda
@@ -67,3 +83,26 @@ sudo snap install hey
 
 hey -n 10000 -c 300 -H "Host: myhost.com" http://localhost:1199/home
 kubectl port-forward svc/backend-service 1199:80 -n back-end-qa-namespace
+
+
+# CORE KUBERNETES:
+kubectl get pods -n kube-system -l k8s-app=kube-dns   
+kubectl describe pod -l k8s-app=kube-dns -n kube-system   
+# Test DNS Resolution Inside the Cluster:
+kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup kubernetes.default   
+
+# Test External DNS Resolution
+kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup google.com   
+
+# Check CoreDNS Logs and Metrics :: View CoreDNS Logs
+kubectl logs -n kube-system -l k8s-app=kube-dns --tail=100   
+
+# Enable Query Logging (for debugging)
+kubectl -n kube-system edit configmap coredns   
+# Access CoreDNS Metrics
+kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].status.podIP}'   
+curl http://<POD_IP>:9153/metrics   
+
+
+sudo ss -tlpns
+
