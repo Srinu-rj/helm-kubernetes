@@ -3,6 +3,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
    name: {{ .Values.serviceAccount.name }}
+   namespace: {{ .Values.namespace.name }}
 provisioner: {{ .Values.serviceAccount.provisioner }}
 allowVolumeExpansion: {{ .Values.serviceAccount.allowVolumeExpansion }}
 parameters:

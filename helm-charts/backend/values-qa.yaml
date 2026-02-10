@@ -79,14 +79,14 @@ namespace:
   name: back-end-qa-namespace
 
 PersistentVolumeClaim:
-  enabled: true
+  enabled: false
   name: aks-dynamic-pvc
   storage: 50Gi
 
 #TODO -> ReadWriteMany access mode, allowing multiple Pods across different nodes to access the same data.
 #TODO ->  file.csi.azure.com: This driver is better suited for shared application data and stateful applications requiring file-level sharing
 serviceAccount:
-  enabled: true
+  enabled: false
   automount: true
   annotations: {}
   name: backend-azure-blob-aks-storage
@@ -120,19 +120,19 @@ HaProxy:
 MinPodDisruptionBudget:
   enabled: true
   name: backend-pdb-min
-  minAvailable: 2
+  minAvailable: 1
 
 MaxPodDisruptionBudget:
   enabled: true
   name: backend-pdb-max
-  maxUnavailable: 4
+  maxUnavailable: 3
 
 NamespaceFinalizers:
   enabled: false
   name: namespace-finalizers
 
 CornJob:
-  enabled: false
+  enabled: true
   name: cron-job-back-end
   schedule: "0 7 * * *"        # Daily at 7 AM
   concurrencyPolicy: Forbid

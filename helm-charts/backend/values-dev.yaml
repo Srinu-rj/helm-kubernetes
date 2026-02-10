@@ -21,7 +21,7 @@ configMap:
 
 #TODO ==> AKS DATABASE KEY VAULT STO :: ==> “Fetch secrets from Azure Key Vault and make them available to Pods, and also sync them into a Kubernetes Secret.”
 secretsKey:
-  enabled: true
+  enabled: false
   name: db-azure-key-vault
   provider: azure
   tenantId: "736437467324673467346374"
@@ -79,14 +79,14 @@ namespace:
   name: back-end-dev-namespace
 
 PersistentVolumeClaim:
-  enabled: true
+  enabled: false
   name: aks-dynamic-pvc
   storage: 50Gi
 
 #TODO -> ReadWriteMany access mode, allowing multiple Pods across different nodes to access the same data.
 #TODO ->  file.csi.azure.com: This driver is better suited for shared application data and stateful applications requiring file-level sharing
 serviceAccount:
-  enabled: true
+  enabled: false
   automount: true
   annotations: {}
   name: backend-azure-blob-aks-storage
@@ -120,12 +120,12 @@ HaProxy:
 MinPodDisruptionBudget:
   enabled: true
   name: backend-pdb-min
-  minAvailable: 3
+  minAvailable: 2
 
 MaxPodDisruptionBudget:
   enabled: true
   name: backend-pdb-max
-  maxUnavailable: 7
+  maxUnavailable: 4
 
 NamespaceFinalizers:
   enabled: false
@@ -143,14 +143,11 @@ CornJob:
     runcronjob: "true"
 
 
-hpa:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 25
-  name: backend-hpa
-
 keda:
   enabled: true
+  name: backend-hpa
+  minReplicas: 1
+  maxReplicas: 10
 
 resourceQuota:
   enabled: false
@@ -227,14 +224,12 @@ securityContext:
   privileged: false
 
 networkPolicy:
-  enabled: true
+  enabled: false
   name: application-network-policy
   podSelector:
     matchLabels:
       app: app-label
   ingress:
-    enabled: true
   egress:
-    enabled: true
 
 ---
