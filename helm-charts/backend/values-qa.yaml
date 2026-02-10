@@ -62,10 +62,10 @@ container:
 
 resources:
   requests:
-    cpu: 400m
+    cpu: 40m
     memory: 64Mi
   limits:
-    cpu: 500m
+    cpu: 50m
     memory: 356Mi
 
 strategy:
