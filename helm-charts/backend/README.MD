@@ -105,4 +105,14 @@ curl http://<POD_IP>:9153/metrics
 
 
 sudo ss -tlpns
+lscpu
+cat /proc/cpuinfo
+dmidecode -t 4
+nproc
+top  | htop
 
+In Kubernetes, 1 CPU is equivalent to 1000 millicores (1000m)::
+
+1000m = 1 CPU core
+100m = 0.1 CPU core
+500m = 0.5 CPU core 

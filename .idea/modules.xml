@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/helm-kubernetes.iml" filepath="$PROJECT_DIR$/.idea/helm-kubernetes.iml" />
+      <module fileurl="file://$PROJECT_DIR$/python-cicd/python-cicd.iml" filepath="$PROJECT_DIR$/python-cicd/python-cicd.iml" />
+      <module fileurl="file://$PROJECT_DIR$/shell-scripet/shell-scripet.iml" filepath="$PROJECT_DIR$/shell-scripet/shell-scripet.iml" />
     </modules>
   </component>
 </project>
