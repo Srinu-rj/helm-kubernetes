@@ -11,6 +11,7 @@ spec:
     runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
     readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
     runAsUser: {{ .Values.securityContext.runAsUser }}
+    runAsGroup: {{ .Values.securityContext.runAsGroup }}
   selector:
     matchLabels:
       {{- include "app-label" . | nindent 6 }}

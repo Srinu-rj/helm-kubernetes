@@ -63,16 +63,16 @@ helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
 helm install keda kedacore/keda -n keda --create-namespace
 
+helm install keda-http-addon kedacore/keda-add-ons-http -n keda
+kubectl get crd | grep httpscaledobjects
 
 Verify:
 watch kubectl get pods -n keda
 kubectl get crd | grep keda
 kubectl get crd | grep http
+kubectl get crd | grep "httpscaledobject"
 
 
-#🟢 Step 2: Install KEDA HTTP Add-on (THIS IS REQUIRED)
-helm install keda-http-addon kedacore/keda-add-ons-http -n keda
-kubectl get crd | grep httpscaledobjects
 
 #🟢 Step 3: Confirm API version (important):
 kubectl get crd httpscaledobjects.http.keda.sh -o yaml | grep version -A5
