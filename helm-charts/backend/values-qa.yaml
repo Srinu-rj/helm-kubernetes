@@ -118,12 +118,12 @@ HaProxy:
     qos.projectcalico.org/egressBurst: 200M
 
 MinPodDisruptionBudget:
-  enabled: true
+  enabled: false
   name: backend-pdb-min
   minAvailable: 1
 
 MaxPodDisruptionBudget:
-  enabled: true
+  enabled: false
   name: backend-pdb-max
   maxUnavailable: 3
 
