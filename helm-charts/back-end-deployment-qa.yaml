@@ -10,20 +10,6 @@ metadata:
     meta.helm.sh/release-name: qa-deployment
     meta.helm.sh/release-namespace: default
 ---
-# Source: backend/templates/network-policy.yml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: application-network-policy
-  namespace: back-end-qa-namespace
-spec:
-  podSelector:
-    app: app-label
-    env: dev
-  policyTypes:
-    - Ingress
-    - Egress
----
 # Source: backend/templates/max-pbd.yml
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -31,7 +17,7 @@ metadata:
   name: backend-pdb-max
   namespace: back-end-qa-namespace
 spec:
-  maxUnavailable: 7
+  maxUnavailable: 3
   selector:
     matchLabels:
       app: app-label
@@ -44,45 +30,18 @@ metadata:
   name: backend-pdb-min
   namespace: back-end-qa-namespace
 spec:
-  minAvailable: 3
+  minAvailable: 1
   selector:
     matchLabels:
       app: app-label
       env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
 ---
-# Source: backend/templates/serviceconnection.yaml
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-   name: backend-azure-blob-aks-storage
-provisioner: blob.csi.azure.com
-allowVolumeExpansion: true
-parameters:
-  skuName: Premium_LRS
-  azureStorageAuthType: ManagedIdentity
-reclaimPolicy: Delete
-volumeBindingMode: Immediate
----
-# Source: backend/templates/pvc.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: aks-dynamic-pvc
-  namespace: back-end-qa-namespace
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: backend-azure-blob-aks-storage
-  resources:
-    requests:
-      storage: 50Gi
----
 # Source: backend/templates/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: node-exporter
-  namespace: spring
+  name: cron-job-back-end
+  namespace: back-end-qa-namespace
 spec:
   selector:
     matchLabels:
@@ -128,11 +87,6 @@ metadata:
     app: app-label
     env: dev
 spec:
-  # TODO -> Pod-level securityContext
-  securityContext:
-    runAsNonRoot: true
-    readOnlyRootFilesystem: true
-    runAsUser: 1000
   selector:
     matchLabels:
       app: app-label
@@ -148,6 +102,12 @@ spec:
       labels:
         app: app-label
         env: dev
+    # TODO -> Pod-level securityContext
+    securityContext:
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      runAsUser: 1000
+      runAsGroup: 3000
     spec:
       containers:
         - name: springbootcontainer
@@ -162,6 +122,30 @@ spec:
             limits:
               cpu: "500m"
               memory: "356Mi"
+---
+# Source: backend/templates/cornjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-job-back-end
+  namespace: back-end-qa-namespace
+spec:
+  schedule: 0 7 * * *  # Runs daily at 7 AM
+  concurrencyPolicy: Forbid  # Prevents overlapping executions
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: springbootcontainer
+              image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
+              imagePullPolicy: Always
+              env:
+                - name: runcronjob
+                  value: "true"
+          restartPolicy: OnFailure
 ---
 # Source: backend/templates/haproxy-ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -196,39 +180,11 @@ spec:
     - myhost.com
   targetPendingRequests: 1
   scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: back-end
     service: backend-service
     port: 1199
   replicas:
     min: 1
-    max: 25
----
-# Source: backend/templates/azure-key-vault.yaml
-apiVersion: secrets-store.csi.x-k8s.io/v1
-kind: SecretProviderClass
-metadata:
-  name: db-azure-key-vault
-  namespace: back-end-qa-namespace
-  spec:
-    provider: azure
-    parameters:
-      usePodIdentity: "false"
-      useVMManagedIdentity: "true"
-      userAssignedIdentityID: 73643746732467346f54374
-      keyvaultName: 7364374673246734rerer346374
-      tenantId: 736437467324673467346374
-      objects: | 
-        array:
-          - |
-            objectName: db-password  
-            objectType: secret
-          - |
-            objectName: db-username  
-            objectType: secret
-    secretObjects:
-      - data:
-          - key: "password"
-            objectName: "db-password"
-          - key: "username"
-            objectName: "db-username"
-        secretName: "db-credentials"
-        type: Opaque
+    max: 10

@@ -19,12 +19,6 @@ spec:
     metadata:
       labels:
         {{- include "app-label" . | nindent 8 }}
-    # TODO -> Pod-level securityContext
-    securityContext:
-      runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
-      readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
-      runAsUser: {{ .Values.securityContext.runAsUser }}
-      runAsGroup: {{ .Values.securityContext.runAsGroup }}
     spec:
       containers:
         - name: {{ .Values.container.containerName }}
