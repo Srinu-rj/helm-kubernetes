@@ -10,6 +10,42 @@ metadata:
     meta.helm.sh/release-name: qa-deployment
     meta.helm.sh/release-namespace: default
 ---
+# Source: backend/templates/resourceQuota.yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota-with-limits
+  namespace: back-end-qa-namespace
+spec:
+  hard:
+    pods: "100"
+    requests.cpu: "2"
+    requests.memory: "2Gi"
+    limits.cpu: "4"
+    limits.memory: "4Gi"
+---
+# Source: backend/templates/limitrange.yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limit-range
+  namespace: back-end-qa-namespace
+spec:
+  limits:
+    - type: Container
+      max:
+        cpu: "500m"
+        memory: "512Mi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      default:
+        cpu: "200m"
+        memory: "256Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+---
 # Source: backend/templates/max-pbd.yml
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -36,46 +72,18 @@ spec:
       app: app-label
       env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
 ---
-# Source: backend/templates/daemonset.yaml
-apiVersion: apps/v1
-kind: DaemonSet
+# Source: backend/templates/finalizers-namespace.yaml
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: cron-job-back-end
+  name: namespace-finalizers
   namespace: back-end-qa-namespace
-spec:
-  selector:
-    matchLabels:
-      app: node-exporter
-  template:
-    metadata:
-      labels:
-        app: node-exporter
-    spec:
-      # nodeSelector:
-      #   kubernetes.io/os: linux
-      containers:
-        - name: node-exporter
-          image: prom/node-exporter:latest
-          args:
-            - --path.procfs=/host/proc
-            - --path.sysfs=/host/sys
-          ports:
-            - name: metrics
-              containerPort: 9100
-          volumeMounts:
-            - name: procfs
-              mountPath: /host/proc
-              readOnly: true
-            - name: sysfs
-              mountPath: /host/sys
-              readOnly: true
-      volumes:
-        - name: procfs
-          hostPath:
-            path: /proc
-        - name: sysfs
-          hostPath:
-            path: /sys
+  finalizers:
+    - kubernetes
+data:
+  env: prod
+status:
+  phase: Active
 ---
 # Source: backend/templates/deployment.yml
 apiVersion: apps/v1
@@ -102,13 +110,11 @@ spec:
       labels:
         app: app-label
         env: dev
-    # TODO -> Pod-level securityContext
-    securityContext:
-      runAsNonRoot: true
-      readOnlyRootFilesystem: true
-      runAsUser: 1000
-      runAsGroup: 3000
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # <-- This is the pod user ID
+        runAsGroup: 3000
       containers:
         - name: springbootcontainer
           image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
@@ -117,57 +123,11 @@ spec:
             - containerPort: 1199
           resources:
             requests:
-              cpu: "400m"
-              memory: "64Mi"
+              cpu: "100m"
+              memory: "128Mi"
             limits:
-              cpu: "500m"
-              memory: "356Mi"
----
-# Source: backend/templates/cornjob.yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: cron-job-back-end
-  namespace: back-end-qa-namespace
-spec:
-  schedule: 0 7 * * *  # Runs daily at 7 AM
-  concurrencyPolicy: Forbid  # Prevents overlapping executions
-  successfulJobsHistoryLimit: 10
-  failedJobsHistoryLimit: 3
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-            - name: springbootcontainer
-              image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
-              imagePullPolicy: Always
-              env:
-                - name: runcronjob
-                  value: "true"
-          restartPolicy: OnFailure
----
-# Source: backend/templates/haproxy-ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ha-proxy-deployment
-  namespace: back-end-qa-namespace
-  annotations:
-    kubernetes.io/ingress.class: "haproxy"
-spec:
-  ingressClassName: haproxy
-  rules:
-    - host: viveja.com # TODO WILD CARD DOMAIN -> "*.domain.com"
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: backend-service
-                port:
-                  number: 1199
+              cpu: "200m"
+              memory: "256Mi"
 ---
 # Source: backend/templates/keda-hpa.yaml
 apiVersion: http.keda.sh/v1alpha1

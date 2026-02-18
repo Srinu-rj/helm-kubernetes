@@ -20,6 +20,10 @@ spec:
       labels:
         {{- include "app-label" . | nindent 8 }}
     spec:
+      securityContext:
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.securityContext.runAsUser }} # <-- This is the pod user ID
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
       containers:
         - name: {{ .Values.container.containerName }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" #TODO ->< IMAGE NAME AND TAGS

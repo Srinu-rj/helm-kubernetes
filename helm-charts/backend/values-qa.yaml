@@ -98,7 +98,7 @@ serviceAccount:
   allowVolumeExpansion: true
 
 HaProxy:
-  enabled: true
+  enabled: false
   name: ha-proxy-deployment
   ingressClassName: haproxy
   rules:
@@ -118,29 +118,27 @@ HaProxy:
     qos.projectcalico.org/egressBurst: 200M
 
 MinPodDisruptionBudget:
-  enabled: false
+  enabled: true
   name: backend-pdb-min
   minAvailable: 1
-
 MaxPodDisruptionBudget:
-  enabled: false
+  enabled: true
   name: backend-pdb-max
   maxUnavailable: 3
-
 NamespaceFinalizers:
-  enabled: false
+  enabled: true
   name: namespace-finalizers
 
-CornJob:
-  enabled: true
-  name: cron-job-back-end
-  schedule: "0 7 * * *"        # Daily at 7 AM
-  concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 10
-  failedJobsHistoryLimit: 3
-  restartPolicy: OnFailure
-  env:
-    runcronjob: "true"
+#CornJob:
+#  enabled: true
+#  name: cron-job-back-end
+#  schedule: "0 7 * * *"        # Daily at 7 AM
+#  concurrencyPolicy: Forbid
+#  successfulJobsHistoryLimit: 10
+#  failedJobsHistoryLimit: 3
+#  restartPolicy: OnFailure
+#  env:
+#    runcronjob: "true"
 
 
 keda:
@@ -148,33 +146,34 @@ keda:
   name: backend-hpa
   minReplicas: 1
   maxReplicas: 10
+  keda_ns:
 
 resourceQuota:
-  enabled: false
+  enabled: true
   name: quota-with-limits
   hard:
     replicas: "100"
-    requestsCpu: "1"
-    requestsMemory: "4Gi"
-    limitsCpu: "3"
-    limitsMemory: "8Gi"
+    requestsCpu: "2"
+    requestsMemory: "2Gi"
+    limitsCpu: "4"
+    limitsMemory: "4Gi"
 
 limitRange:
-  enabled: false
+  enabled: true
   name: limit-range
   container:
     max:
-      cpu: "2"
-      memory: "2Gi"
+      cpu: 500m
+      memory: 512Mi
     min:
-      cpu: "800m"
-      memory: "500Mi"
+      cpu: 50m
+      memory: 64Mi
     default:
-      cpu: "1"
-      memory: "1Gi"
+      cpu: 200m
+      memory: 256Mi
     defaultRequest:
-      cpu: "500m"
-      memory: "500Mi"
+      cpu: 100m
+      memory: 128Mi
 
 
 livenessProbe:
@@ -219,10 +218,10 @@ initContainers:
 
 securityContext:
   runAsNonRoot: true
-  readOnlyRootFilesystem: true
-  runAsUser: 1000
+  runAsUser: 1000 # <-- This is the pod user ID
   runAsGroup: 3000
   privileged: false
+  readOnlyRootFilesystem: true
 
 networkPolicy:
   enabled: false

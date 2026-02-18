@@ -55,6 +55,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
    name: backend-azure-blob-aks-storage
+   namespace: back-end-future-namespace
 provisioner: blob.csi.azure.com
 allowVolumeExpansion: true
 parameters:
@@ -77,47 +78,6 @@ spec:
     requests:
       storage: 50Gi
 ---
-# Source: backend/templates/daemonset.yaml
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: node-exporter
-  namespace: spring
-spec:
-  selector:
-    matchLabels:
-      app: node-exporter
-  template:
-    metadata:
-      labels:
-        app: node-exporter
-    spec:
-      # nodeSelector:
-      #   kubernetes.io/os: linux
-      containers:
-        - name: node-exporter
-          image: prom/node-exporter:latest
-          args:
-            - --path.procfs=/host/proc
-            - --path.sysfs=/host/sys
-          ports:
-            - name: metrics
-              containerPort: 9100
-          volumeMounts:
-            - name: procfs
-              mountPath: /host/proc
-              readOnly: true
-            - name: sysfs
-              mountPath: /host/sys
-              readOnly: true
-      volumes:
-        - name: procfs
-          hostPath:
-            path: /proc
-        - name: sysfs
-          hostPath:
-            path: /sys
----
 # Source: backend/templates/deployment.yml
 apiVersion: apps/v1
 kind: Deployment
@@ -128,11 +88,6 @@ metadata:
     app: app-label
     env: dev
 spec:
-  # TODO -> Pod-level securityContext
-  securityContext:
-    runAsNonRoot: true
-    readOnlyRootFilesystem: true
-    runAsUser: 1000
   selector:
     matchLabels:
       app: app-label
@@ -149,6 +104,10 @@ spec:
         app: app-label
         env: dev
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # <-- This is the pod user ID
+        runAsGroup: 
       containers:
         - name: springbootcontainer
           image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
@@ -162,30 +121,6 @@ spec:
             limits:
               cpu: "500m"
               memory: "356Mi"
----
-# Source: backend/templates/cornjob.yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: cron-job-back-end
-  namespace: back-end-future-namespace
-spec:
-  schedule: 0 7 * * *  # Runs daily at 7 AM
-  concurrencyPolicy: Forbid  # Prevents overlapping executions
-  successfulJobsHistoryLimit: 10
-  failedJobsHistoryLimit: 3
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-            - name: springbootcontainer
-              image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
-              imagePullPolicy: Always
-              env:
-                - name: runcronjob
-                  value: "true"
-          restartPolicy: OnFailure
 ---
 # Source: backend/templates/haproxy-ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -213,18 +148,21 @@ spec:
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
-  name: backend-hpa
+  name: 
   namespace: back-end-future-namespace
 spec:
   hosts:
     - myhost.com
   targetPendingRequests: 1
   scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: back-end
     service: backend-service
     port: 1199
   replicas:
-    min: 1
-    max: 25
+    min: 
+    max:
 ---
 # Source: backend/templates/azure-key-vault.yaml
 apiVersion: secrets-store.csi.x-k8s.io/v1

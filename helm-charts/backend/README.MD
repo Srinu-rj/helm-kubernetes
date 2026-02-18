@@ -27,6 +27,23 @@ kubectl get all -n future-namespace
 kubectl get all -n prod-namespace
 k get HTTPScaledObject -n back-end-qa-namespace
 
+
+# DOMAIN
+kubectl label nodes <node-name> <label-key>=<label-value>
+kubectl label nodes worker-1 hardware=gpu   
+
+
+affinity:
+nodeAffinity:
+requiredDuringSchedulingIgnoredDuringExecution:
+nodeSelectorTerms:
+- matchExpressions:
+- key: hardware
+operator: In
+values:
+- gpu
+
+
 # HA PROXY
 # Option A: Using Helm
 helm repo add haproxytech https://haproxytech.github.io/helm-charts
@@ -68,10 +85,60 @@ kubectl get crd | grep httpscaledobjects
 
 Verify:
 watch kubectl get pods -n keda
+kubectl get crd | grep keda  http
+kubectl get crd | grep http
+kubectl get crd | grep "httpscaledobject"
+
+
+# INSTALL KEDA :
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda --namespace keda --create-namespace
+kubectl get pods -n keda
+
+
+kubectl apply -f https://github.com/kedacore/keda/releases/latest/download/keda.yaml
+kubectl get pods -n keda
+kubectl get crd | grep keda
+
+
+helm upgrade keda kedacore/keda -n keda
+# metrics-server → KEDA → HTTP add-on → apps
+
+
+
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda -n keda --create-namespace
+
+helm install keda-http-addon kedacore/keda-add-ons-http -n keda
+kubectl apply -f https://github.com/kedacore/http-add-on/releases/latest/download/http-add-on.crds.yaml
+
+kubectl get crd | grep httpscaledobjects
+
+helm install keda kedacore/keda --version 2.19.0 --namespace keda --create-namespace
+
+kubectl get httpscaledobject
+kubectl get svc -n keda | grep keda-add-ons-http-interceptor-proxy
+
+# keda version 
+kubectl get crd/scaledobjects.keda.sh -o yaml
+watch kubectl get pods -n keda
 kubectl get crd | grep keda
 kubectl get crd | grep http
 kubectl get crd | grep "httpscaledobject"
 
+# UNINSTALL KEDA 
+helm uninstall keda -n keda
+kubectl delete $(kubectl get scaledobjects,scaledjobs -A -o jsonpath='{\"-n \"}{.items[*].metadata.namespace}{\" \"}{.items[*].kind}{\"/\"}{.items[*].metadata.name}{\"\\n\"}')
+kubectl delete -f https://github.com/kedacore/keda/releases/download/v2.6.1/keda-2.6.1.yaml
+
+
+
+# Manual Installation (from Git repo):
+git clone https://github.com/kedacore/keda && cd keda
+git checkout tags/v2.19.0
+kubectl apply -f deploy/crds/
 
 
 #🟢 Step 3: Confirm API version (important):
