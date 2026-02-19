@@ -8,17 +8,26 @@ terraform {
       source  = "hashicorp/helm"
       version = "3.0.1"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "2.38.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = "3.7.2"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.4"
+    }
   }
   required_version = ">= 1.1.9"
+
 }
+
 
 provider "azurerm" {
   features {}
 }
-
 
 

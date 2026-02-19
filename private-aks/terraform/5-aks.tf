@@ -20,7 +20,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
   kubernetes_version = local.eks_version
   # automatic_channel_upgrade = "stable"
   private_cluster_enabled = false
-  node_resource_group     = "${local.resource_group_name}-${local.env}-${local.eks_name}"
+  node_resource_group = "${local.resource_group_name}-${local.env}-${local.eks_name}"
 
   # For production change to "Standard"
   sku_tier                  = "Free"
@@ -29,30 +29,33 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
   azure_policy_enabled      = true
 
 
-  default_node_pool {
-    name       = "default"
-    node_count = 2
-    vm_size    = "Standard_D2as_v5"
-  }
-
   # default_node_pool {
-  #   name                 = "default"
-  #   vm_size              = "Standard_D2as_v5"
-  #   orchestrator_version = local.eks_version
-  #   type                 = "VirtualMachineScaleSets"
-  #   enable_auto_scaling  = true
-  #   node_count           = 1
-  #   min_count            = 1
-  #   max_count            = 2
-  #   os_disk_size_gb    = 100
-  #   os_disk_type       = "Managed"
-  #   os_sku             = "Ubuntu"
-  #   # role_based_access_control_enabled = true
-  #
-  #   node_labels = {
-  #     role = "general"
-  #   }
+  #   name           = "default"
+  #   node_count     = 2
+  #   vm_size        = "Standard_D2as_v5"
+  #   vnet_subnet_id = azurerm_subnet.subnet1.id
   # }
+
+  default_node_pool {
+    name                  = "default"
+    vm_size               = "Standard_D2as_v5"
+    orchestrator_version  = local.eks_version
+    type                  = "VirtualMachineScaleSets"
+    vnet_subnet_id        = azurerm_subnet.subnet1.id
+    enable_auto_scaling   = true
+    enable_node_public_ip = false
+    node_count            = 1
+    min_count             = 1
+    max_count             = 2
+    os_disk_size_gb       = 100
+    os_disk_type          = "Managed"
+    os_sku = "Ubuntu"
+    # role_based_access_control_enabled = true
+
+    node_labels = {
+      role = "general"
+    }
+  }
 
   timeouts {
     create = "60m"
@@ -65,6 +68,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
     service_cidr      = "10.0.64.0/19"
     network_policy    = "calico"
     load_balancer_sku = "standard"
+    # network_mode      = "overlay"
   }
 
   identity {
@@ -84,5 +88,10 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
     azurerm_role_assignment.role_assignment
   ]
 
+  # kubectl config get-contexts
+  provisioner "local-exec" {
+    command= "az aks get-credentials --name ${self.name} --resource-group ${azurerm_resource_group.aks_rg_demo.name} --admin --overwrite-existing"
+  }
 }
+
 
