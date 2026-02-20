@@ -1,4 +1,5 @@
-resource "azurerm_user_assigned_identity" "user_assigned_identity" {
+
+           resource "azurerm_user_assigned_identity" "user_assigned_identity" {
   name                = "dev-test"
   resource_group_name = azurerm_resource_group.aks_rg_demo.name
   location            = azurerm_resource_group.aks_rg_demo.location

@@ -1,3 +1,4 @@
+
 resource "azurerm_kubernetes_cluster_node_pool" "cluster_node_pool" {
   name                  = "internal"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks_cluster_backend.id

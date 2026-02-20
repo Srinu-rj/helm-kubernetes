@@ -1,3 +1,4 @@
+
 resource "azurerm_user_assigned_identity" "assigned_identity" {
   name                = "base"
   resource_group_name = azurerm_resource_group.aks_rg_demo.name

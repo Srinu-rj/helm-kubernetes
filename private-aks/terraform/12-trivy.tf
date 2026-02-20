@@ -1,3 +1,4 @@
+
 # resource "kubernetes_namespace_v1" "trivy" {
 #   metadata {
 #     name        = "my-namespace"
