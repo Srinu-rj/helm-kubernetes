@@ -21,7 +21,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
   kubernetes_version = local.eks_version
   # automatic_channel_upgrade = "stable"
   private_cluster_enabled = false
-  node_resource_group = "${local.resource_group_name}-${local.env}-${local.eks_name}"
+  node_resource_group     = "${local.resource_group_name}-${local.env}-${local.eks_name}"
 
   # For production change to "Standard"
   sku_tier                  = "Free"
@@ -43,15 +43,18 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
     orchestrator_version  = local.eks_version
     type                  = "VirtualMachineScaleSets"
     vnet_subnet_id        = azurerm_subnet.subnet1.id
-    enable_auto_scaling   = true
     enable_node_public_ip = false
-    node_count            = 1
-    min_count             = 1
-    max_count             = 2
+    node_count            = 2
+    enable_auto_scaling = false
+    min_count           = null
+    max_count           = null
     os_disk_size_gb       = 100
     os_disk_type          = "Managed"
-    os_sku = "Ubuntu"
+    os_sku                = "Ubuntu"
     # role_based_access_control_enabled = true
+    node_network_profile {
+
+    }
 
     node_labels = {
       role = "general"
@@ -91,8 +94,14 @@ resource "azurerm_kubernetes_cluster" "aks_cluster_backend" {
 
   # kubectl config get-contexts
   provisioner "local-exec" {
-    command= "az aks get-credentials --name ${self.name} --resource-group ${azurerm_resource_group.aks_rg_demo.name} --admin --overwrite-existing"
+    command = "az aks get-credentials --name ${self.name} --resource-group ${azurerm_resource_group.aks_rg_demo.name} --admin --overwrite-existing"
   }
 }
-
+resource "azurerm_log_analytics_workspace" "log_analytics" {
+  name                = "loganalyticsk8s"
+  location            = azurerm_resource_group.aks_rg_demo.location
+  resource_group_name = azurerm_resource_group.aks_rg_demo.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 90
+}
 
