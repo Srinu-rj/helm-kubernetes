@@ -5,6 +5,9 @@ metadata:
   name: {{ .Values.namespace.name }}
   labels:
     app.kubernetes.io/managed-by: Helm
+    pod-security.kubernetes.io/enforce: restricted   # strictest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   annotations:
     meta.helm.sh/release-name: {{ .Release.Name }}
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}

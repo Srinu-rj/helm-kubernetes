@@ -12,7 +12,7 @@ resource "helm_release" "argo_rollouts" {
   name              = "argo-rollouts"
   repository        = "https://argoproj.github.io/argo-helm"
   chart             = "argo-rollouts"
-  version           = "2.35.1"               # ← check latest on ArtifactHub
+  version           = "2.35.1" # ← check latest on ArtifactHub
   namespace         = kubernetes_namespace_v1.argo_rollouts.metadata[0].name
   wait              = true
   timeout           = 1900
@@ -22,51 +22,44 @@ resource "helm_release" "argo_rollouts" {
 
   set = [
 
-    # ── Controller ───────────────────────────────────────────
     {
       name  = "controller.replicas"
       value = "2"
-      type  = "auto"                         # ✅ integer
+      type  = "auto"
     },
-
-    # ── CRDs ─────────────────────────────────────────────────
     {
       name  = "installCRDs"
       value = "true"
-      type  = "auto"                         # ✅ boolean
+      type  = "auto"
     },
-
-    # ── Dashboard UI ─────────────────────────────────────────
     {
       name  = "dashboard.enabled"
       value = "true"
-      type  = "auto"                         # ✅ boolean
+      type  = "auto"
     },
     {
       name  = "dashboard.replicas"
       value = "1"
-      type  = "auto"                         # ✅ integer
+      type  = "auto"
     },
     {
       name  = "dashboard.service.type"
-      value = "ClusterIP"                    # plain string — no type needed
+      value = "ClusterIP"
     },
-
-    # ── Prometheus Metrics ───────────────────────────────────
     {
       name  = "controller.metrics.enabled"
       value = "true"
-      type  = "auto"                         # ✅ boolean
+      type  = "auto"
     },
     {
       name  = "serviceMonitor.enabled"
       value = "true"
-      type  = "auto"                         # ✅ boolean
+      type  = "auto"
     },
     {
       name  = "notifications.enabled"
       value = "true"
-      type  = "auto"                         # ✅ boolean
+      type  = "auto"
     }
   ]
 
@@ -87,8 +80,8 @@ resource "kubernetes_ingress_v1" "argo_rollouts_dashboard" {
     namespace = kubernetes_namespace_v1.argo_rollouts.metadata[0].name
 
     annotations = {
-      "cert-manager.io/cluster-issuer"          = "letsencrypt-staging"
-      "haproxy-ingress.github.io/ssl-redirect"  = "true"
+      "cert-manager.io/cluster-issuer"         = "letsencrypt-staging"
+      "haproxy-ingress.github.io/ssl-redirect" = "true"
     }
   }
 
@@ -96,12 +89,12 @@ resource "kubernetes_ingress_v1" "argo_rollouts_dashboard" {
     ingress_class_name = "haproxy"
 
     tls {
-      hosts       = ["rollouts.example.com"]   # ← change to your domain
+      hosts       = ["rollouts.example.com"] # ← change to your domain
       secret_name = "argo-rollouts-tls"
     }
 
     rule {
-      host = "rollouts.example.com"            # ← change to your domain
+      host = "rollouts.example.com" # ← change to your domain
       http {
         path {
           path      = "/"
@@ -131,18 +124,18 @@ resource "kubernetes_ingress_v1" "argo_rollouts_dashboard" {
 # Outputs
 ###############################################################
 
-output "argo_rollouts_namespace" {
-  description = "Namespace where Argo Rollouts is installed"
-  value       = kubernetes_namespace_v1.argo_rollouts.metadata[0].name
-}
-
-output "argo_rollouts_version" {
-  description = "Installed chart version"
-  value       = helm_release.argo_rollouts.version
-}
-
-output "argo_rollouts_dashboard_url" {
-  description = "Dashboard URL — update DNS to point to HAProxy LB IP"
-  value       = "https://rollouts.example.com"
-}
+# output "argo_rollouts_namespace" {
+#   description = "Namespace where Argo Rollouts is installed"
+#   value       = kubernetes_namespace_v1.argo_rollouts.metadata[0].name
+# }
+#
+# output "argo_rollouts_version" {
+#   description = "Installed chart version"
+#   value       = helm_release.argo_rollouts.version
+# }
+#
+# output "argo_rollouts_dashboard_url" {
+#   description = "Dashboard URL — update DNS to point to HAProxy LB IP"
+#   value       = "https://rollouts.example.com"
+# }
 

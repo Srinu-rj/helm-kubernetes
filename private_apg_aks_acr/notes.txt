@@ -1,0 +1,113 @@
+📁 private-aks/
+├── 00-providers.tf
+├── 01-resource-group.tf
+├── 02-networking.tf
+├── 03-nsg.tf
+├── 04-nat-gateway.tf
+├── 05-private-dns.tf
+├── 06-keyvault.tf
+├── 07-acr.tf
+├── 08-log-analytics.tf
+├── 09-aks.tf
+├── 10-node-pools.tf
+├── 11-appgateway.tf
+├── 12-private-endpoints.tf
+├── 13-bastion.tf
+├── 14-roles.tf
+├── 15-outputs.tf
+└── terraform.tfvars
+
+
+terraform init
+terraform validate
+terraform fmt
+terraform plan -parallelism=50
+
+# ── Resource Group ────────────────────────────────────────
+terraform apply -target="azurerm_resource_group.rg" -auto-approve
+
+# ── Networking ────────────────────────────────────────────
+terraform apply -target="azurerm_virtual_network.vnet" -auto-approve
+
+# ── NSG ───────────────────────────────────────────────────
+terraform apply -target="azurerm_network_security_group.aks_system_nsg" -auto-approve
+terraform apply -target="azurerm_network_security_group.appgw_nsg" -auto-approve
+terraform apply -target="azurerm_network_security_group.jumpbox_nsg" -auto-approve
+
+# ── NAT Gateway ───────────────────────────────────────────
+terraform apply -target="azurerm_nat_gateway.nat_gw" -auto-approve
+
+# ── Private DNS ───────────────────────────────────────────
+terraform apply -target="azurerm_private_dns_zone.aks_dns" -auto-approve
+terraform apply -target="azurerm_private_dns_zone.acr_dns" -auto-approve
+terraform apply -target="azurerm_private_dns_zone.kv_dns" -auto-approve
+terraform apply -target="azurerm_private_dns_zone.blob_dns" -auto-approve
+
+# ── DNS VNet Links ────────────────────────────────────────
+terraform apply -target="azurerm_private_dns_zone_virtual_network_link.aks_dns_link" -auto-approve
+terraform apply -target="azurerm_private_dns_zone_virtual_network_link.acr_dns_link" -auto-approve
+terraform apply -target="azurerm_private_dns_zone_virtual_network_link.kv_dns_link" -auto-approve
+terraform apply -target="azurerm_private_dns_zone_virtual_network_link.blob_dns_link" -auto-approve
+
+# ── AKS Identity ──────────────────────────────────────────
+terraform apply -target="azurerm_user_assigned_identity.aks_identity" -auto-approve
+
+# ── Roles ─────────────────────────────────────────────────
+terraform apply -target="azurerm_role_assignment.aks_dns_contributor" -auto-approve
+terraform apply -target="azurerm_role_assignment.aks_vnet_contributor" -auto-approve
+
+# ── Key Vault ─────────────────────────────────────────────
+terraform apply -target="azurerm_key_vault.kv" -auto-approve
+
+# ── ACR ───────────────────────────────────────────────────
+terraform apply -target="azurerm_container_registry.acr" -auto-approve
+
+# ── Log Analytics ─────────────────────────────────────────
+terraform apply -target="azurerm_log_analytics_workspace.logs" -auto-approve
+terraform apply -target="azurerm_log_analytics_solution.container_insights" -auto-approve
+
+# ── AKS ───────────────────────────────────────────────────
+terraform apply -target="azurerm_kubernetes_cluster.aks" -auto-approve
+
+# ── Node Pools ────────────────────────────────────────────
+terraform apply -target="azurerm_kubernetes_cluster_node_pool.user_pool" -auto-approve
+
+# ── App Gateway ───────────────────────────────────────────
+terraform apply -target="azurerm_web_application_firewall_policy.waf" -auto-approve
+terraform apply -target
+
+# Get credentials
+az aks get-credentials --resource-group rg-private-aks-prod --name aks-private-prod
+kubectl get nodes
+
+📦 State Management::
+
+# Initialize — download providers, modules, setup backend
+terraform init
+
+# Re-initialize with upgrade (update providers)
+terraform init -upgrade
+
+# Format all .tf files
+terraform fmt
+terraform fmt -recursive        # all subdirs
+
+# Validate configuration syntax
+terraform validate
+
+# Plan — preview changes
+terraform plan
+terraform plan -out=tfplan      # save plan to file
+terraform plan -var="env=prod"  # pass variable
+terraform plan -target=aws_instance.web   # specific resource
+
+# Apply
+terraform apply
+terraform apply tfplan           # apply saved plan
+terraform apply -auto-approve    # skip confirmation
+terraform apply -target=aws_instance.web  # specific resource
+
+# Destroy
+terraform destroy
+terraform destroy -auto-approve
+terraform destroy -target=aws_instance.web

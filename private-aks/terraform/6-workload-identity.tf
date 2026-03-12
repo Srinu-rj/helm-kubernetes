@@ -1,5 +1,5 @@
 
-           resource "azurerm_user_assigned_identity" "user_assigned_identity" {
+resource "azurerm_user_assigned_identity" "user_assigned_identity" {
   name                = "dev-test"
   resource_group_name = azurerm_resource_group.aks_rg_demo.name
   location            = azurerm_resource_group.aks_rg_demo.location
@@ -14,5 +14,4 @@ resource "azurerm_federated_identity_credential" "federated_identity_credential"
   subject             = "system:serviceaccount:dev:my-account"
 
   depends_on = [azurerm_kubernetes_cluster.aks_cluster_backend]
-
 }

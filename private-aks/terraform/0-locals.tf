@@ -7,3 +7,4 @@ locals {
   ha_proxy_name       = "haproxy-ingress"
 
 }
+

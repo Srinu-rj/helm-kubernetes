@@ -21,32 +21,30 @@ resource "helm_release" "haproxy" {
 
 
   set = [
-    # ✅ FIX: type = "auto" forces Helm to treat value as integer, not string
-    # Without this, "2" is passed as a string and gt comparison fails in templates
+
     {
       name  = "controller.replicaCount"
       value = "2"
-      type  = "auto"                           # ← integer, not string
+      type  = "auto"
     },
     {
       name  = "controller.minAvailable"
       value = "1"
-      type  = "auto"                           # ← integer, not string
+      type  = "auto"
     },
     {
       name  = "controller.service.type"
       value = "LoadBalancer"
-      # type omitted — string values don't need type = "auto"
     },
     {
       name  = "controller.stats.enabled"
       value = "true"
-      type  = "auto"                           # ← boolean
+      type  = "auto"
     },
     {
       name  = "controller.metrics.enabled"
       value = "true"
-      type  = "auto"                           # ← boolean
+      type  = "auto"
     }
   ]
 
@@ -54,5 +52,4 @@ resource "helm_release" "haproxy" {
     kubernetes_namespace_v1.ha_proxy_namespace,
     azurerm_kubernetes_cluster.aks_cluster_backend
   ]
-
 }

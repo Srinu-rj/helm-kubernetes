@@ -2,6 +2,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "cluster_node_pool" {
   name                  = "internal"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks_cluster_backend.id
   vm_size               = "Standard_D2s_v3"
+  eviction_policy       = "Delete"
   os_type               = "Linux"
   mode                  = "User"
   priority              = "Spot"
@@ -17,6 +18,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "cluster_node_pool" {
   node_labels = {
     role                                    = "spot"
     "kubernetes.azure.com/scalesetpriority" = "spot"
+  }
+
+  upgrade_settings {
+    max_surge = "33%"
   }
 
   node_taints = [

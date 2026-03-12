@@ -1,0 +1,13 @@
+deployment:
+  replicas: ${replica_count}      # ✅ correct templatefile syntax
+environment: ${environment}
+service:
+  type: LoadBalancer
+logs:
+  general:
+    level: INFO
+providers:
+  kubernetesCRD:
+    enabled: true
+  kubernetesIngress:
+    enabled: true

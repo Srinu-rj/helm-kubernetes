@@ -6,7 +6,11 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 3.0"                     # ✅ v3.x — uses set = [...] syntax
+      version = "~> 3.0" # ✅ v3.x — uses set = [...] syntax
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "2.38.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -15,10 +19,6 @@ terraform {
     null = {
       source  = "hashicorp/null"
       version = "3.2.4"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.38.0"
     }
   }
   required_version = ">= 1.1.9"
