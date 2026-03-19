@@ -21,11 +21,11 @@ spec:
         {{- include "app-label" . | nindent 8 }}
     spec:
       securityContext:
-        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
-        runAsUser: {{ .Values.securityContext.runAsUser }} # <-- This is the pod user ID
-        runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}   # ← pod level
       containers:
         - name: {{ .Values.container.containerName }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}  # ← container level
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" #TODO ->< IMAGE NAME AND TAGS
           imagePullPolicy: {{ .Values.restartPolicy }}
           ports:

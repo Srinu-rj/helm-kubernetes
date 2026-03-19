@@ -4,7 +4,6 @@ helm template dev-deployment backend/ -f backend/values-dev.yaml > back-end-depl
 helm template future-deployment backend/ -f backend/values-future.yaml > back-end-deployment-future.yaml
 helm template prod-deployment backend/ -f backend/values-prod.yaml > back-end-deployment-prod.yaml
 
-
 helm install backend-qa-realese backend/ --values backend/values-qa.yaml
 helm install backend-dev-realese backend/ --values backend/values-dev.yaml
 helm install backend-future-realese backend/ --values backend/values-future.yaml
@@ -19,6 +18,10 @@ helm uninstall backend-qa-realese
 helm uninstall backend-dev-realese
 helm uninstall backend-feture-realese
 helm uninstall backend-prod-realese
+
+kubectl delete secret -n default -l name=backend-dev-realese,owner=helm
+kubectl delete secret -n default -l name=backend-qa-realese,owner=helm
+kubectl delete secret -n default -l name=backend-dev-realese,owner=helm
 
 kubectl get all -n qa-namespace
 kubectl get all -n dev-namespace
@@ -78,6 +81,11 @@ kubectl get pods -n kube-system | grep metrics-server
 helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
 helm install keda kedacore/keda -n keda --create-namespace
+
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda --namespace keda --create-namespace
+
 
 helm install keda-http-addon kedacore/keda-add-ons-http -n keda
 kubectl get crd | grep httpscaledobjects

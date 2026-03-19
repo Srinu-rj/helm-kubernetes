@@ -4,11 +4,29 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: back-end-qa-namespace
-  labels:
-    app.kubernetes.io/managed-by: Helm
   annotations:
     meta.helm.sh/release-name: qa-deployment
     meta.helm.sh/release-namespace: default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    pod-security.kubernetes.io/enforce: restricted   # strictest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# Source: backend/templates/network-policy.yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: application-network-policy
+  namespace: back-end-qa-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: app-label
+      env: dev
+  policyTypes:
+    - Ingress
+    - Egress
 ---
 # Source: backend/templates/resourceQuota.yaml
 apiVersion: v1
@@ -24,29 +42,8 @@ spec:
     limits.cpu: "4"
     limits.memory: "4Gi"
 ---
-# Source: backend/templates/limitrange.yaml
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: limit-range
-  namespace: back-end-qa-namespace
-spec:
-  limits:
-    - type: Container
-      max:
-        cpu: "500m"
-        memory: "512Mi"
-      min:
-        cpu: "50m"
-        memory: "64Mi"
-      default:
-        cpu: "200m"
-        memory: "256Mi"
-      defaultRequest:
-        cpu: "100m"
-        memory: "128Mi"
----
 # Source: backend/templates/max-pbd.yml
+# TODO PodDisruptionBudget (PDB) is a Kubernetes resource that ensures a specified minimum  number of pods remain available during voluntary disruptions, such as node maintenance, upgrades, or scaling operations
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -71,6 +68,16 @@ spec:
     matchLabels:
       app: app-label
       env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
+---
+# Source: backend/templates/serviceconnection.yaml
+---
+ apiVersion: v1
+ kind: ServiceAccount
+ metadata:
+   name: my-account
+   namespace: dev
+   annotations:
+     azure.workload.identity/client-id: c2f6168a-9f76-4e62-ab21-7dc876a89a0a
 ---
 # Source: backend/templates/finalizers-namespace.yaml
 apiVersion: v1
@@ -112,7 +119,7 @@ spec:
         env: dev
     spec:
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
         runAsUser: 1000 # <-- This is the pod user ID
         runAsGroup: 3000
       containers:
@@ -128,6 +135,28 @@ spec:
             limits:
               cpu: "200m"
               memory: "256Mi"
+---
+# Source: backend/templates/haproxy-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ha-proxy-deployment
+  namespace: back-end-qa-namespace
+  annotations:
+    kubernetes.io/ingress.class: "haproxy"
+spec:
+  ingressClassName: haproxy
+  rules:
+    - host: viveja.com # TODO WILD CARD DOMAIN -> "*.domain.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 1199
 ---
 # Source: backend/templates/keda-hpa.yaml
 apiVersion: http.keda.sh/v1alpha1

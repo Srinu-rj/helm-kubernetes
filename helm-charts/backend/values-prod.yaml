@@ -1,4 +1,4 @@
-replicas: 5
+replicas: 7
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -62,16 +62,16 @@ container:
 
 resources:
   requests:
-    cpu: 400m
-    memory: 64Mi
+    cpu: "100m"
+    memory: "128Mi"
   limits:
-    cpu: 500m
-    memory: 356Mi
+    cpu: "200m"
+    memory: "256Mi"
 
 strategy:
   type: RollingUpdate
   rollingUpdate:
-    maxSurge: 1
+    maxSurge: 3
     maxUnavailable: 0
 
 namespace:
@@ -79,7 +79,7 @@ namespace:
   name: back-end-prod-namespace
 
 PersistentVolumeClaim:
-  enabled: true
+  enabled: false
   name: aks-dynamic-pvc
   storage: 50Gi
 
@@ -118,29 +118,18 @@ HaProxy:
     qos.projectcalico.org/egressBurst: 200M
 
 MinPodDisruptionBudget:
-  enabled: true
+  enabled: false
   name: backend-pdb-min
-  minAvailable: 4
+  minAvailable: 1
 
 MaxPodDisruptionBudget:
-  enabled: true
+  enabled: false
   name: backend-pdb-max
-  maxUnavailable: 8
+  maxUnavailable: 3
 
 NamespaceFinalizers:
   enabled: false
   name: namespace-finalizers
-
-CornJob:
-  enabled: false
-  name: cron-job-back-end
-  schedule: "0 7 * * *"        # Daily at 7 AM
-  concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 10
-  failedJobsHistoryLimit: 3
-  restartPolicy: OnFailure
-  env:
-    runcronjob: "true"
 
 
 keda:
@@ -149,32 +138,33 @@ keda:
   minReplicas: 1
   maxReplicas: 10
 
+
 resourceQuota:
-  enabled: false
+  enabled: true
   name: quota-with-limits
   hard:
     replicas: "100"
-    requestsCpu: "1"
-    requestsMemory: "4Gi"
-    limitsCpu: "3"
-    limitsMemory: "8Gi"
+    requestsCpu: "2"
+    requestsMemory: "2Gi"
+    limitsCpu: "4"
+    limitsMemory: "4Gi"
 
 limitRange:
   enabled: false
   name: limit-range
   container:
     max:
-      cpu: "2"
-      memory: "2Gi"
+      cpu: 500m
+      memory: 512Mi
     min:
-      cpu: "800m"
-      memory: "500Mi"
+      cpu: 50m
+      memory: 64Mi
     default:
-      cpu: "1"
-      memory: "1Gi"
+      cpu: 200m
+      memory: 256Mi
     defaultRequest:
-      cpu: "500m"
-      memory: "500Mi"
+      cpu: 100m
+      memory: 128Mi
 
 
 livenessProbe:
@@ -195,10 +185,6 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 3
 
-nodeSelector: { }
-tolerations: [ ]
-affinity: { }
-
 initContainers:
   - name: wait-for-mysql
     image: mysql:8.0
@@ -217,19 +203,31 @@ initContainers:
         done
         echo "MySQL is ready!"
 
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+  fsGroup: 2000
+  seccompProfile:          # ← missing here
+    type: RuntimeDefault
+
 securityContext:
   runAsNonRoot: true
+  allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
-  runAsUser: 1000
-  privileged: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 
 networkPolicy:
-  enabled: false
+  enabled: true
   name: application-network-policy
   podSelector:
     matchLabels:
       app: app-label
-  ingress:
-  egress:
+  ingress: []
+  egress: []
 
 ---

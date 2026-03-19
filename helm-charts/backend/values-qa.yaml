@@ -1,4 +1,4 @@
-replicas: 5
+replicas: 2
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -98,11 +98,11 @@ serviceAccount:
   allowVolumeExpansion: true
 
 HaProxy:
-  enabled: false
+  enabled: true
   name: ha-proxy-deployment
   ingressClassName: haproxy
   rules:
-     host: viveja.com
+    host: viveja.com
   annotations:
     haproxy.org/ingress.class: "haproxy"
     haproxy.org/rate-limit-requests: "10"
@@ -118,27 +118,18 @@ HaProxy:
     qos.projectcalico.org/egressBurst: 200M
 
 MinPodDisruptionBudget:
-  enabled: true
+  enabled: false
   name: backend-pdb-min
   minAvailable: 1
+
 MaxPodDisruptionBudget:
-  enabled: true
+  enabled: false
   name: backend-pdb-max
   maxUnavailable: 3
-NamespaceFinalizers:
-  enabled: true
-  name: namespace-finalizers
 
-#CornJob:
-#  enabled: true
-#  name: cron-job-back-end
-#  schedule: "0 7 * * *"        # Daily at 7 AM
-#  concurrencyPolicy: Forbid
-#  successfulJobsHistoryLimit: 10
-#  failedJobsHistoryLimit: 3
-#  restartPolicy: OnFailure
-#  env:
-#    runcronjob: "true"
+NamespaceFinalizers:
+  enabled: false
+  name: namespace-finalizers
 
 
 keda:
@@ -146,7 +137,7 @@ keda:
   name: backend-hpa
   minReplicas: 1
   maxReplicas: 10
-  keda_ns:
+
 
 resourceQuota:
   enabled: true
@@ -159,7 +150,7 @@ resourceQuota:
     limitsMemory: "4Gi"
 
 limitRange:
-  enabled: true
+  enabled: false
   name: limit-range
   container:
     max:
@@ -194,10 +185,6 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 3
 
-nodeSelector: { }
-tolerations: [ ]
-affinity: { }
-
 initContainers:
   - name: wait-for-mysql
     image: mysql:8.0
@@ -216,20 +203,31 @@ initContainers:
         done
         echo "MySQL is ready!"
 
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+  fsGroup: 2000
+  seccompProfile:          # ← missing here
+    type: RuntimeDefault
+
 securityContext:
   runAsNonRoot: true
-  runAsUser: 1000 # <-- This is the pod user ID
-  runAsGroup: 3000
-  privileged: false
+  allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 
 networkPolicy:
-  enabled: false
+  enabled: true
   name: application-network-policy
   podSelector:
     matchLabels:
       app: app-label
-  ingress:
-  egress:
+  ingress: []
+  egress: []
 
 ---

@@ -6,11 +6,15 @@ metadata:
   name: back-end-dev-namespace
   labels:
     app.kubernetes.io/managed-by: Helm
+    pod-security.kubernetes.io/enforce: restricted   # strictest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   annotations:
     meta.helm.sh/release-name: dev-deployment
     meta.helm.sh/release-namespace: default
 ---
 # Source: backend/templates/max-pbd.yml
+# TODO PodDisruptionBudget (PDB) is a Kubernetes resource that ensures a specified minimum  number of pods remain available during voluntary disruptions, such as node maintenance, upgrades, or scaling operations
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -36,6 +40,16 @@ spec:
       app: app-label
       env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
 ---
+# Source: backend/templates/serviceconnection.yaml
+---
+ apiVersion: v1
+ kind: ServiceAccount
+ metadata:
+   name: my-account
+   namespace: dev
+   annotations:
+     azure.workload.identity/client-id: c2f6168a-9f76-4e62-ab21-7dc876a89a0a
+---
 # Source: backend/templates/deployment.yml
 apiVersion: apps/v1
 kind: Deployment
@@ -47,6 +61,10 @@ metadata:
     env: dev
 spec:
   selector:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000 # <-- This is the pod user ID
+      runAsGroup: 
     matchLabels:
       app: app-label
       env: dev
@@ -62,10 +80,6 @@ spec:
         app: app-label
         env: dev
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000 # <-- This is the pod user ID
-        runAsGroup: 
       containers:
         - name: springbootcontainer
           image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS

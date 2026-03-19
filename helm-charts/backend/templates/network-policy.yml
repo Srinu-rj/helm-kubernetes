@@ -6,7 +6,8 @@ metadata:
   namespace: {{ .Values.namespace.name }}
 spec:
   podSelector:
-    {{- include "app-label" . | nindent 4 }}
+    matchLabels:
+      {{- include "app-label" . | nindent 6 }}
   policyTypes:
     - Ingress
     - Egress

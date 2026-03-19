@@ -1,4 +1,4 @@
-CHART := backend
+CHART := .
 
 .PHONY: template install upgrade uninstall status
 
