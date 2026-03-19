@@ -1,0 +1,13 @@
+#TODO ==>  QA
+make qa-template && make qa-install && make qa-upgrade && make qa-uninstall && make qa-status
+
+#TODO ==>  Dev
+make dev-template && make dev-install && make dev-upgrade && make dev-uninstall && make dev-status
+
+#TODO ==>  Future
+make future-template && make future-install && make future-upgrade && make future-uninstall && make future-status
+
+#TODO ==> Prod
+make prod-template && make prod-install && make prod-upgrade && make prod-uninstall && make prod-status
+
+

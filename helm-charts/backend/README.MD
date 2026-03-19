@@ -10,6 +10,10 @@ helm install backend-dev-realese backend/ --values backend/values-dev.yaml
 helm install backend-future-realese backend/ --values backend/values-future.yaml
 helm install backend-prod-realese backend/ --values backend/values-prod.yaml
 
+helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml
+helm upgrade backend-dev-realese backend/ --values backend/values-dev.yaml
+helm upgrade backend-future-realese backend/ --values backend/values-future.yaml
+helm upgrade backend-prod-realese backend/ --values backend/values-prod.yaml
 
 helm uninstall backend-qa-realese
 helm uninstall backend-dev-realese

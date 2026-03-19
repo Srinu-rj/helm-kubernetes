@@ -1,3 +1,4 @@
+# TODO PodDisruptionBudget (PDB) is a Kubernetes resource that ensures a specified minimum  number of pods remain available during voluntary disruptions, such as node maintenance, upgrades, or scaling operations
  {{- if .Values.MaxPodDisruptionBudget.enabled }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget

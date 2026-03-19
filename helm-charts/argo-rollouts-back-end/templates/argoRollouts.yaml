@@ -25,14 +25,14 @@ spec:
               - templateName: dependency-health
 
         - setWeight: 60
-        - pause: { duration: 20m }
+        - pause: { duration: 10m }
         - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
             templates:
               - templateName: latency
               - templateName: success-rate
 
         - setWeight: 80
-        - pause: { duration: 10m }
+        - pause: { duration: 05m }
 
         - setWeight: 100
   selector:
