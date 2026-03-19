@@ -71,3 +71,25 @@ kubectl get pods -n monitoring
 
 
 kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+
+
+========================================================================================================================
+kubectl exec -it <pod> -n <namespace> -- /bin/sh
+kubectl exec -it <pod> -n <namespace> -- /bin/bash
+
+# specific container in a pod (multi-container pod)
+kubectl exec -it <pod> -n <namespace> -c <container-name> -- /bin/sh
+kubectl exec -it deployment/<name> -n <namespace> -- /bin/sh
+
+# specific container in deployment
+kubectl exec -it deployment/<name> -n <namespace> -c <container-name> -- /bin/sh
+kubectl exec <pod> -n <namespace> -- ls /app
+kubectl exec <pod> -n <namespace> -- cat /etc/config
+kubectl exec <pod> -n <namespace> -- env
+
+
+kubectl run debug --image=busybox -it --rm -- /bin/sh
+kubectl run debug --image=ubuntu -it --rm -- /bin/bash
+
+# attach to same network as a pod
+kubectl debug -it <pod> --image=busybox --target=<container> -n <namespace>

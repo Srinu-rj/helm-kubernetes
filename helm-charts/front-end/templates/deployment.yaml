@@ -20,8 +20,12 @@ spec:
       labels:
         {{- include "frontend" .| nindent 8 }}
     spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}   # ← pod level
       containers:
         - name: {{ .Values.image.containerName }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}  # ← container level
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: {{ .Values.image.containerPort }}

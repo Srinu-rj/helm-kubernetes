@@ -14,10 +14,10 @@ namespace:
   name: front-qa-namespace
 
 image:
-  repository: vaidehisatpute/clonedocker
+  repository: mahesh032/angular-web-app
   pullPolicy: IfNotPresent
-  tag: 115
-  containerPort: 3000
+  tag: 71
+  containerPort: 80
   containerName: frontendcontainer
 
 strategy:
@@ -44,7 +44,22 @@ PersistentVolumeClaim:
 podAnnotations: {}
 podLabels: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+  fsGroup: 2000
+  seccompProfile:          # ← missing here
+    type: RuntimeDefault
+
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 
 resources:
    limits:

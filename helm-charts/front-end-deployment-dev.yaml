@@ -6,6 +6,9 @@ metadata:
   name: front-dev-namespace
   labels:
     app.kubernetes.io/managed-by: Helm
+    pod-security.kubernetes.io/enforce: restricted   # strictest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   annotations:
     meta.helm.sh/release-name: frontend-dev-deployment
     meta.helm.sh/release-namespace: default
@@ -56,8 +59,23 @@ spec:
         app: frontend
         env: front-end
     spec:
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault   # ← pod level
       containers:
         - name: frontendcontainer
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault  # ← container level
           image: "vaidehisatpute/clonedocker:115"
           ports:
             - containerPort: 3000

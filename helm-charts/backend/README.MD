@@ -27,7 +27,9 @@ kubectl get all -n qa-namespace
 kubectl get all -n dev-namespace
 kubectl get all -n future-namespace
 kubectl get all -n prod-namespace
+
 k get HTTPScaledObject -n back-end-qa-namespace
+kubectl api-resources -o wide
 
 
 # DOMAIN

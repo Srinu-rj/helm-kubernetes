@@ -14,5 +14,10 @@ helm upgrade frontend-qa-realese front-end/ --values front-end/values-qa.yaml
 helm upgrade frontend-dev-realese front-end/ --values front-end/values-dev.yaml  
 helm upgrade frontend-prod-realese front-end/ --values front-end/values-prod.yaml  
 helm upgrade frontend-future-realese front-end/ --values front-end/values-future.yaml
- 
+
+helm uninstall frontend-qa-realese
+helm uninstall frontend-dev-realese
+helm uninstall frontend-prod-realese
+helm uninstall frontend-future-realese
+
 k port-forward -n front-qa-namespace svc/frontend-service 3000:80
