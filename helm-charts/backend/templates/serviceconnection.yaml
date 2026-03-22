@@ -1,16 +1,112 @@
- {{- if .Values.serviceAccount.enabled }}
+#TODO Azure Disk - Standard HDD (Managed)
+ {{- if .Values.storageClass.enabled }}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-   name: {{ .Values.serviceAccount.name }}
-   namespace: {{ .Values.namespace.name }}
-provisioner: {{ .Values.serviceAccount.provisioner }}
-allowVolumeExpansion: {{ .Values.serviceAccount.allowVolumeExpansion }}
+  name: {{ .Values.storageClass.azureDisk.name }}-standard
+  labels:
+    {{- include "app-label" . | nindent 4 }}
+provisioner: disk.csi.azure.com
+allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+volumeBindingMode: WaitForFirstConsumer
 parameters:
-  skuName: {{ .Values.serviceAccount.skuName }}
-  azureStorageAuthType: {{ .Values.serviceAccount.azureStorageAuthType }}
-reclaimPolicy: {{ .Values.serviceAccount.reclaimPolicy }}
+  skuName: Standard_LRS
+  kind: Managed
+   {{- if .Values.storageClass.azureDisk.diskEncryptionSetID }}
+  diskEncryptionSetID: {{ .Values.storageClass.azureDisk.diskEncryptionSetID }}
+   {{- end }}
+   {{- if .Values.storageClass.resourceGroup }}
+  resourceGroup: {{ .Values.storageClass.resourceGroup }}
+   {{- end }}
+   {{- if .Values.storageClass.subscriptionID }}
+  subscriptionID: {{ .Values.storageClass.subscriptionID }}
+   {{- end }}
+
+---
+# Azure Disk - Premium SSD
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.azureDisk.name }}-premium
+  labels:
+    {{- include "app-label" . | nindent 4 }}
+provisioner: disk.csi.azure.com
+allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  skuName: Premium_LRS
+  kind: Managed
+  cachingMode: ReadOnly
+   {{- if .Values.storageClass.azureDisk.diskEncryptionSetID }}
+  diskEncryptionSetID: {{ .Values.storageClass.azureDisk.diskEncryptionSetID }}
+   {{- end }}
+   {{- if .Values.storageClass.resourceGroup }}
+  resourceGroup: {{ .Values.storageClass.resourceGroup }}
+   {{- end }}
+
+---
+# Azure File Share - SMB (Workload Identity)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.azureFile.name }}-smb
+  labels:
+    {{- include "app-label" . | nindent 4 }}
+provisioner: file.csi.azure.com
+allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
 volumeBindingMode: Immediate
- {{- end }}
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=0
+  - gid=0
+  - mfsymlinks
+  - cache=strict
+  - actimeo=30
+parameters:
+  skuName: {{ .Values.storageClass.azureFile.skuName }}
+  # Workload Identity (Recommended for AKS)
+  azureStorageAuthType: {{ .Values.storageClass.azureFile.authType }}
+   {{- if eq .Values.storageClass.azureFile.authType "workloadIdentity" }}
+  azureStorageAccountName: {{ .Values.storageClass.azureFile.storageAccountName }}
+  azureStorageAccountNamespace: {{ .Release.Namespace }}
+   {{- end }}
+   {{- if .Values.storageClass.resourceGroup }}
+  resourceGroup: {{ .Values.storageClass.resourceGroup }}
+   {{- end }}
+   {{- if .Values.storageClass.subscriptionID }}
+  subscriptionID: {{ .Values.storageClass.subscriptionID }}
+   {{- end }}
+   {{- if .Values.storageClass.tenantID }}
+  tenantID: {{ .Values.storageClass.tenantID }}
+   {{- end }}
+
+---
+# Azure File Share - NFS
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.azureFile.name }}-nfs
+  labels:
+    {{- include "app-label" . | nindent 4 }}
+provisioner: file.csi.azure.com
+allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+volumeBindingMode: Immediate
+parameters:
+  skuName: Premium_LRS
+  protocol: nfs
+  azureStorageAuthType: {{ .Values.storageClass.azureFile.authType }}
+   {{- if .Values.storageClass.resourceGroup }}
+  resourceGroup: {{ .Values.storageClass.resourceGroup }}
+   {{- end }}
+   {{- if .Values.storageClass.subscriptionID }}
+  subscriptionID: {{ .Values.storageClass.subscriptionID }}
+   {{- end }}
+
+   {{- end }}
 
 ---

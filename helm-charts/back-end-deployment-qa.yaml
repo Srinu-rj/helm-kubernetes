@@ -13,7 +13,7 @@ metadata:
     pod-security.kubernetes.io/audit: restricted
     pod-security.kubernetes.io/warn: restricted
 ---
-# Source: backend/templates/network-policy.yml
+# Source: backend/templates/network-policy.yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -42,55 +42,94 @@ spec:
     limits.cpu: "4"
     limits.memory: "4Gi"
 ---
-# Source: backend/templates/max-pbd.yml
-# TODO PodDisruptionBudget (PDB) is a Kubernetes resource that ensures a specified minimum  number of pods remain available during voluntary disruptions, such as node maintenance, upgrades, or scaling operations
-apiVersion: policy/v1
-kind: PodDisruptionBudget
+# Source: backend/templates/serviceconnection.yaml
+#TODO Azure Disk - Standard HDD (Managed)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
-  name: backend-pdb-max
-  namespace: back-end-qa-namespace
-spec:
-  maxUnavailable: 3
-  selector:
-    matchLabels:
-      app: app-label
-      env: dev
----
-# Source: backend/templates/min-pbd.yml
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: backend-pdb-min
-  namespace: back-end-qa-namespace
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: app-label
-      env: dev #TODO -> Label to identify the backend service pods and should match the labels used in the Deployment |
+  name: azure-disk-standard
+  labels:
+    app: app-label
+    env: dev
+provisioner: disk.csi.azure.com
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  skuName: Standard_LRS
+  kind: Managed
+  resourceGroup: my-aks-resource-group
+  subscriptionID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ---
 # Source: backend/templates/serviceconnection.yaml
----
- apiVersion: v1
- kind: ServiceAccount
- metadata:
-   name: my-account
-   namespace: dev
-   annotations:
-     azure.workload.identity/client-id: c2f6168a-9f76-4e62-ab21-7dc876a89a0a
----
-# Source: backend/templates/finalizers-namespace.yaml
-apiVersion: v1
-kind: ConfigMap
+# Azure Disk - Premium SSD
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
-  name: namespace-finalizers
-  namespace: back-end-qa-namespace
-  finalizers:
-    - kubernetes
-data:
-  env: prod
-status:
-  phase: Active
+  name: azure-disk-premium
+  labels:
+    app: app-label
+    env: dev
+provisioner: disk.csi.azure.com
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  skuName: Premium_LRS
+  kind: Managed
+  cachingMode: ReadOnly
+  resourceGroup: my-aks-resource-group
+---
+# Source: backend/templates/serviceconnection.yaml
+# Azure File Share - SMB (Workload Identity)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azure-file-smb
+  labels:
+    app: app-label
+    env: dev
+provisioner: file.csi.azure.com
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=0
+  - gid=0
+  - mfsymlinks
+  - cache=strict
+  - actimeo=30
+parameters:
+  skuName: Standard_LRS
+  # Workload Identity (Recommended for AKS)
+  azureStorageAuthType: workloadIdentity
+  azureStorageAccountName: myaksstore
+  azureStorageAccountNamespace: default
+  resourceGroup: my-aks-resource-group
+  subscriptionID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  tenantID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+---
+# Source: backend/templates/serviceconnection.yaml
+# Azure File Share - NFS
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azure-file-nfs
+  labels:
+    app: app-label
+    env: dev
+provisioner: file.csi.azure.com
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  skuName: Premium_LRS
+  protocol: nfs
+  azureStorageAuthType: workloadIdentity
+  resourceGroup: my-aks-resource-group
+  subscriptionID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ---
 # Source: backend/templates/deployment.yml
 apiVersion: apps/v1
@@ -106,7 +145,7 @@ spec:
     matchLabels:
       app: app-label
       env: dev
-  replicas: 5
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -119,22 +158,32 @@ spec:
         env: dev
     spec:
       securityContext:
-        runAsNonRoot: false
-        runAsUser: 1000 # <-- This is the pod user ID
-        runAsGroup: 3000
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault   # ← pod level
       containers:
         - name: springbootcontainer
-          image: "srinu641/spring-application-k8s:v3.0" #TODO ->< IMAGE NAME AND TAGS
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault  # ← container level
+          image: "srinu641/spring-application-k8s:V2.0"  #TODO ->< IMAGE NAME AND TAGS
           imagePullPolicy: Always
           ports:
             - containerPort: 1199
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "300m"
+              memory: "328Mi"
             limits:
-              cpu: "200m"
-              memory: "256Mi"
+              cpu: "500m"
+              memory: "600Mi"
 ---
 # Source: backend/templates/haproxy-ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -157,6 +206,9 @@ spec:
                 name: backend-service
                 port:
                   number: 1199
+---
+# Source: backend/templates/max-pbd.yml
+# TODO PodDisruptionBudget (PDB) is a Kubernetes resource that ensures a specified minimum  number of pods remain available during voluntary disruptions, such as node maintenance, upgrades, or scaling operations
 ---
 # Source: backend/templates/keda-hpa.yaml
 apiVersion: http.keda.sh/v1alpha1

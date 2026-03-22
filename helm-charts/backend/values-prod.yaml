@@ -46,14 +46,14 @@ service:
   serviceApp: backend-service
   types: NodePort
   targetPort: 1199
-  port: 80
+  port: 1199
 
 app:
   env: dev
 
 image:
   repository: srinu641/spring-application-k8s
-  tag: v3.0
+  tag: V5.1
   pullPolicy: IfNotPresent
 
 container:

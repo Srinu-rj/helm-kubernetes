@@ -1,32 +1,75 @@
-# BACK END
 helm template qa-deployment backend/ -f backend/values-qa.yaml > back-end-deployment-qa.yaml
 helm template dev-deployment backend/ -f backend/values-dev.yaml > back-end-deployment-dev.yaml
 helm template future-deployment backend/ -f backend/values-future.yaml > back-end-deployment-future.yaml
 helm template prod-deployment backend/ -f backend/values-prod.yaml > back-end-deployment-prod.yaml
 
-helm install backend-qa-realese backend/ --values backend/values-qa.yaml
-helm install backend-dev-realese backend/ --values backend/values-dev.yaml
-helm install backend-future-realese backend/ --values backend/values-future.yaml
-helm install backend-prod-realese backend/ --values backend/values-prod.yaml
+helm get manifest backend-qa-realese
+helm get manifest backend-dev-realese
+helm get manifest backend-future-realese
+helm get manifest backend-prod-realese
+
+# Template & Rendering
+helm template debug-backend-release ./backend --debug > rendered.yaml
+helm template debug-backend-release-spc-file ./backend -s templates/deployment.yaml
+
+helm install backend-qa-realese backend/ --values backend/values-qa.yaml --wait --timeout 1m
+helm install backend-dev-realese backend/ --values backend/values-dev.yaml --wait --timeout 5m
+helm install backend-future-realese backend/ --values backend/values-future.yaml --wait --timeout 5m
+helm install backend-prod-realese backend/ --values backend/values-prod.yaml --wait --timeout 5m
+
+watch kubectl get all -n back-end-qa-namespace
+watch kubectl get all -n back-end-dev-namespace
+watch kubectl get all -n back-end-future-namespace
+watch kubectl get all -n back-end-prod-namespace
 
 helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml
 helm upgrade backend-dev-realese backend/ --values backend/values-dev.yaml
 helm upgrade backend-future-realese backend/ --values backend/values-future.yaml
 helm upgrade backend-prod-realese backend/ --values backend/values-prod.yaml
 
+# Dry run before actual install (server-side validation)
+helm install my-release ./my-chart --dry-run
+
+# Dry run with debug (shows full rendered manifests + metadata)
+helm install my-release ./my-chart --dry-run --debug
+# Upgrade with dry run
+helm upgrade my-release ./my-chart --dry-run --debug
+# Install with atomic (auto-rollback on failure)
+helm install my-release ./my-chart --atomic --timeout 2m
+# Install and wait for all resources to be ready
+helm install my-release ./my-chart --wait --timeout 5m
+
+
 helm uninstall backend-qa-realese
 helm uninstall backend-dev-realese
 helm uninstall backend-feture-realese
 helm uninstall backend-prod-realese
 
+# Lint your chart for errors
+helm lint ./backend
+# Lint with values file
+helm lint ./backend -f values-qa.yaml
+# Lint with strict mode (warnings become errors)
+helm lint ./backend --strict
+
+
+kubectl describe pod <pod-name> | grep -A 20 Events
+
 kubectl delete secret -n default -l name=backend-dev-realese,owner=helm
 kubectl delete secret -n default -l name=backend-qa-realese,owner=helm
 kubectl delete secret -n default -l name=backend-dev-realese,owner=helm
 
-kubectl get all -n qa-namespace
-kubectl get all -n dev-namespace
-kubectl get all -n future-namespace
-kubectl get all -n prod-namespace
+# List all releases
+helm list -A
+
+helm list -A --failed
+helm status my-release
+helm get values my-release
+helm get values my-release --all
+helm get manifest my-release
+helm get hooks my-release
+helm get all my-release
+
 
 k get HTTPScaledObject -n back-end-qa-namespace
 kubectl api-resources -o wide
@@ -61,7 +104,6 @@ kubectl get service --namespace haproxy-controller
 curl http://172.16.51.8:30337/ -H 'Host: hello-world.example.com'
 
 # Calico on Kubernetes for Red Hat Enterprise Linux (RHEL)::
-
 helm repo add projectcalico https://docs.tigera.io/calico/charts
 helm repo update
 

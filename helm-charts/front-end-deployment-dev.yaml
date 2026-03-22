@@ -13,7 +13,7 @@ metadata:
     meta.helm.sh/release-name: frontend-dev-deployment
     meta.helm.sh/release-namespace: default
 ---
-# Source: front-end/templates/service.yaml
+# Source: front-end/templates/service.yml
 apiVersion: v1
 kind: Service
 metadata:

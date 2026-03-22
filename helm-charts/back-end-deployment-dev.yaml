@@ -27,7 +27,7 @@ spec:
       app: app-label
       env: dev
 ---
-# Source: backend/templates/min-pbd.yml
+# Source: backend/templates/min-pbd.yaml
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

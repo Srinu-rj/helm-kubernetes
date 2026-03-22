@@ -3,11 +3,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: front-prod-namespace
+  name: front-qa-namespace
   labels:
     app.kubernetes.io/managed-by: Helm
+    pod-security.kubernetes.io/enforce: restricted   # strictest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   annotations:
-    meta.helm.sh/release-name: frontend-prod-deployment
+    meta.helm.sh/release-name: frontend-qa-deployment
     meta.helm.sh/release-namespace: default
 ---
 # Source: front-end/templates/service.yml
@@ -15,7 +18,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
-  namespace: front-prod-namespace
+  namespace: front-qa-namespace
   labels:
     app: frontend
     env: front-end
@@ -35,7 +38,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-end-deployment
-  namespace: front-prod-namespace
+  namespace: front-qa-namespace
   labels:
     app: frontend
     env: front-end
@@ -56,11 +59,26 @@ spec:
         app: frontend
         env: front-end
     spec:
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault   # ← pod level
       containers:
         - name: frontendcontainer
-          image: "vaidehisatpute/clonedocker:115"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault  # ← container level
+          image: "mahesh032/angular-web-app:71"
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             requests:
               cpu: 100m
