@@ -1,46 +1,111 @@
-
-
 rollout:
   app:
     env: prod
-  name: backend
-  namespace: argo-cd-rollout-front-end-qa-namespace
-  replicas: 10
-  strategy:
-    canary:
-      steps:
-        - setWeight: 20
-        - pause: { duration: 20m }
-        - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
-            templates:
-              - templateName: error_rate
-              - templateName: latency
-              - templateName: pod-restarts
-
-        - setWeight: 40
-        - pause: { duration: 15m }
-        - analysis:
-            templates:
-              - templateName: cpu-usage
-              - templateName: memory-usage
-              - templateName: dependency-health
-
-        - setWeight: 60
-        - pause: { duration: 20m }
-        - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
-            templates:
-              - templateName: latency
-              - templateName: success-rate
-
-        - setWeight: 80
-        - pause: { duration: 10m }
-
-        - setWeight: 100
+  name: backend-canary-deployment
+  namespace: back-end-qa-namespace
+  replicas: 3
+#  strategy:
+#    canary:
+#      steps:
+#        - setWeight: 20
+#        - pause: { duration: 20m }
+#        - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
+#            templates:
+#              - templateName: error-rate
+#              - templateName: latency
+#              - templateName: pod-restarts
+#
+#        - setWeight: 40
+#        - pause: { duration: 15m }
+#        - analysis:
+#            templates:
+#              - templateName: cpu-usage
+#              - templateName: memory-usage
+#              - templateName: dependency-health
+#
+#        - setWeight: 60
+#        - pause: { duration: 20m }
+#        - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
+#            templates:
+#              - templateName: latency
+#              - templateName: success-rate
+#
+#        - setWeight: 80
+#        - pause: { duration: 10m }
+#
+#        - setWeight: 100
 
 # TODO ->  Deployment label should be match with rollout label if you want to rollout you new version
 container:
-  name: springbootcontainer
+  name: spring-boot-container
   image: srinu641/spring-application-k8s
   tag: v3.0
   port: 1199
 
+
+---
+## ── Rollout ───────────────────────────────────────────
+#rollout:
+#  name: backend-canary-deployment
+#  namespace: back-end-qa-namespace
+#  replicas: 3
+#
+## ── Container ─────────────────────────────────────────
+#container:
+#  name: spring-boot-container
+#  image: srinu641/spring-application-k8s
+#  tag: v3.0
+#  port: 1199
+#
+## ── Analysis Args ──────────────────────────────────────
+#analysis:
+#  serviceName: backend-service
+#  servicePort: "1199"
+#  prometheusAddress: http://prometheus-server.monitoring.svc.cluster.local:9090
+#  thresholds:
+#    errorRate: "0.05"         # ← fail if error rate > 5%
+#    latencyP99: "0.5"         # ← fail if p99 latency > 500ms
+#    podRestarts: "2"          # ← fail if restarts > 2
+#    cpuUsage: "0.8"           # ← fail if CPU > 80%
+#    memoryUsage: "0.8"        # ← fail if memory > 80%
+#    successRate: "0.95"       # ← fail if success rate < 95%
+#
+## ── Service ────────────────────────────────────────────
+#service:
+#  enabled: true
+#  serviceApp: backend-service
+#  type: NodePort
+#  port: 1199
+#  targetPort: 1199
+#  nodePort: 31199
+#
+## ── Labels ─────────────────────────────────────────────
+#app:
+#  name: backend
+#  env: qa
+#
+## ── Resources ──────────────────────────────────────────
+#resources:
+#  requests:
+#    cpu: "100m"
+#    memory: "256Mi"
+#  limits:
+#    cpu: "300m"
+#    memory: "512Mi"
+#
+## ── Security Context ───────────────────────────────────
+#podSecurityContext:
+#  runAsNonRoot: true
+#  runAsUser: 1000
+#  fsGroup: 2000
+#  seccompProfile:
+#    type: RuntimeDefault
+#
+#securityContext:
+#  allowPrivilegeEscalation: false
+#  runAsNonRoot: true
+#  runAsUser: 1000
+#  readOnlyRootFilesystem: true
+#  capabilities:
+#    drop:
+#      - ALL

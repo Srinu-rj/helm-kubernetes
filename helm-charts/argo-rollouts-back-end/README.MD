@@ -3,21 +3,26 @@ helm template argo-roll-out-back-end-qa-deployment argo-rollouts-back-end/ -f ar
 helm template argo-roll-out-back-end-prod-deployment argo-rollouts-back-end/ -f argo-rollouts-back-end/prod-values.yaml > argo-roll-out-prod-back-end-deployment.yaml
 
 
-helm install argo-cd-rollout-dev-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/dev-values.yaml
-helm install argo-cd-rollout-qa-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/qa-values.yaml
-helm install argo-cd-rollout-prod-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/prod-values.yaml
+helm install argo-cd-rollout-qa-release-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/qa-values.yaml
+helm install argo-cd-rollout-dev-release-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/dev-values.yaml
+helm install argo-cd-rollout-prod-release-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/prod-values.yaml
 
-helm upgrade argo-cd-rollout-dev-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/dev-values.yaml
-helm upgrade argo-cd-rollout-qa-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/qa-values.yaml
-helm upgrade argo-cd-rollout-prod-realese-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/prod-values.yaml
+helm upgrade argo-cd-rollout-qa-release-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/qa-values.yaml
+helm upgrade argo-cd-rollout-dev-release-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/dev-values.yaml
+helm upgrade argo-cd-rollout-prod-release-back-end argo-rollouts-back-end/ --values argo-rollouts-back-end/prod-values.yaml
 
-helm uninstall argo-cd-rollout-dev-realese-back-end
-helm uninstall argo-cd-rollout-qa-realese-back-end
-helm uninstall argo-cd-rollout-prod-realese-back-end
+helm uninstall argo-cd-rollout-qa-release-back-end
+helm uninstall argo-cd-rollout-dev-release-back-end
+helm uninstall argo-cd-rollout-prod-release-back-end
 
 helm template prod-deployment argocd/ -f argocd/prod-values.yaml | grep "# Source"
 
+helm test argo-cd-rollout-qa-release-back-end
+helm test backend-qa-release --logs
 
+helm lint ./argo-rollouts-back-end
+helm lint ./argo-rollouts-back-end -f values-qa.yaml
+helm lint ./argo-rollouts-back-end --strict
 
 
 =======================

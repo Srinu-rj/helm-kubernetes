@@ -30,6 +30,9 @@ helm upgrade backend-prod-release backend/ --values backend/values-prod.yaml --w
 
 helm test backend-qa-release
 helm test backend-qa-release --logs
+helm lint ./backend
+helm lint ./backend -f values-qa.yaml
+helm lint ./backend --strict
 
 # Dry run before actual install (server-side validation)
 helm install my-release ./my-chart --dry-run
@@ -48,14 +51,6 @@ helm uninstall backend-qa-release
 helm uninstall backend-dev-release
 helm uninstall backend-future-release
 helm uninstall backend-prod-release
-
-# Lint your chart for errors
-helm lint ./backend
-# Lint with values file
-helm lint ./backend -f values-qa.yaml
-# Lint with strict mode (warnings become errors)
-helm lint ./backend --strict
-
 
 kubectl describe pod <pod-name> | grep -A 20 Events
 

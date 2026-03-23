@@ -1,0 +1,59 @@
+# Create namespace
+kubectl create namespace argocd
+
+# Install ArgoCD
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Watch pods come up
+kubectl get pods -n argocd -w
+
+
+# Option 1 — Port Forward (local access)
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Then open → https://localhost:8080
+
+# Option 2 — NodePort
+kubectl patch svc argocd-server -n argocd \
+  -p '{"spec": {"type": "NodePort"}}'
+
+# Option 3 — LoadBalancer (AKS recommended)
+kubectl patch svc argocd-server -n argocd \
+  -p '{"spec": {"type": "LoadBalancer"}}'
+
+# Get external IP (AKS)
+kubectl get svc argocd-server -n argocd
+
+# Get initial admin password
+kubectl get secret argocd-initial-admin-secret \
+  -n argocd \
+  -o jsonpath="{.data.password}" | base64 -d && echo
+
+# Login via CLI
+argocd login localhost:8080 \
+  --username admin \
+  --password <password-from-above> \
+  --insecure
+
+# Change password after first login
+argocd account update-password
+
+==========================
+# Install Argo Rollouts::
+==========================
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl get pods -n argo-rollouts -w
+
+# Linux
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+chmod +x kubectl-argo-rollouts-linux-amd64
+sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
+# Verify
+kubectl argo rollouts version
+
+# Port forward dashboard
+kubectl argo rollouts dashboard -n argo-rollouts
+
+# Then open → http://localhost:3100

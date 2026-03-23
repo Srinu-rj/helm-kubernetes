@@ -7,7 +7,7 @@ rollout:
   app:
     env: prod
   name: backend
-  namespace: argo-cd-rollout-front-end-prod-namespace
+  namespace: back-end-prod-namespace
   replicas: 10
   strategy:
     canary:

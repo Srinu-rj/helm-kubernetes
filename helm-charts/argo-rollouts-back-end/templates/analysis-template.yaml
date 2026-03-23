@@ -1,0 +1,185 @@
+## ── 1. Error Rate ───────────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: error-rate                          # ← fixed underscore to hyphen
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#  metrics:
+#    - name: error-rate
+#      interval: 30s
+#      failureLimit: 3
+#      consecutiveErrorLimit: 3
+#      successCondition: result[0] <= 0.05   # ← fail if error rate > 5%
+#      provider:
+#        prometheus:
+#          address: http://prometheus-server.monitoring.svc.cluster.local:9090
+#          query: |
+#            sum(rate(http_requests_total{
+#              service="{{`{{args.service-name}}`}}",
+#              status=~"5.."
+#            }[2m]))
+#            /
+#            sum(rate(http_requests_total{
+#              service="{{`{{args.service-name}}`}}"
+#            }[2m]))
+#
+#---
+## ── 2. Latency ──────────────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: latency
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#  metrics:
+#    - name: latency-p99
+#      interval: 30s
+#      failureLimit: 3
+#      successCondition: result[0] <= 0.5    # ← fail if p99 latency > 500ms
+#      provider:
+#        prometheus:
+#          address: http://prometheus-server.monitoring.svc.cluster.local:9090
+#          query: |
+#            histogram_quantile(0.99,
+#              sum(rate(http_request_duration_seconds_bucket{
+#                service="{{`{{args.service-name}}`}}"
+#              }[2m])) by (le)
+#            )
+#
+#---
+## ── 3. Pod Restarts ─────────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: pod-restarts
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#  metrics:
+#    - name: pod-restarts
+#      interval: 30s
+#      failureLimit: 2
+#      successCondition: result[0] <= 2      # ← fail if restarts > 2
+#      provider:
+#        prometheus:
+#          address: http://prometheus-server.monitoring.svc.cluster.local:9090
+#          query: |
+#            sum(kube_pod_container_status_restarts_total{
+#              pod=~"{{`{{args.service-name}}`}}-.*"
+#            })
+#
+#---
+## ── 4. CPU Usage ────────────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: cpu-usage
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#  metrics:
+#    - name: cpu-usage
+#      interval: 30s
+#      failureLimit: 3
+#      successCondition: result[0] <= 0.8    # ← fail if CPU > 80%
+#      provider:
+#        prometheus:
+#          address: http://prometheus-server.monitoring.svc.cluster.local:9090
+#          query: |
+#            sum(rate(container_cpu_usage_seconds_total{
+#              pod=~"{{`{{args.service-name}}`}}-.*",
+#              container!=""
+#            }[2m]))
+#            /
+#            sum(kube_pod_container_resource_limits{
+#              pod=~"{{`{{args.service-name}}`}}-.*",
+#              resource="cpu"
+#            })
+#
+#---
+## ── 5. Memory Usage ─────────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: memory-usage
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#  metrics:
+#    - name: memory-usage
+#      interval: 30s
+#      failureLimit: 3
+#      successCondition: result[0] <= 0.8    # ← fail if memory > 80%
+#      provider:
+#        prometheus:
+#          address: http://prometheus-server.monitoring.svc.cluster.local:9090
+#          query: |
+#            sum(container_memory_working_set_bytes{
+#              pod=~"{{`{{args.service-name}}`}}-.*",
+#              container!=""
+#            })
+#            /
+#            sum(kube_pod_container_resource_limits{
+#              pod=~"{{`{{args.service-name}}`}}-.*",
+#              resource="memory"
+#            })
+#
+#---
+## ── 6. Dependency Health ─────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: dependency-health
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#    - name: service-port
+#  metrics:
+#    - name: dependency-health
+#      interval: 30s
+#      failureLimit: 3
+#      successCondition: result == "Healthy"
+#      provider:
+#        web:
+#          url: "http://{{`{{args.service-name}}`}}:{{`{{args.service-port}}`}}/actuator/health"
+#          timeoutSeconds: 10
+#          jsonPath: "{$.status}"              # ← Spring Boot actuator health endpoint
+#
+#---
+## ── 7. Success Rate ──────────────────────────────────
+#apiVersion: argoproj.io/v1alpha1
+#kind: AnalysisTemplate
+#metadata:
+#  name: success-rate
+#  namespace: {{ .Values.rollout.namespace }}
+#spec:
+#  args:
+#    - name: service-name
+#  metrics:
+#    - name: success-rate
+#      interval: 30s
+#      failureLimit: 3
+#      successCondition: result[0] >= 0.95   # ← fail if success rate < 95%
+#      provider:
+#        prometheus:
+#          address: http://prometheus-server.monitoring.svc.cluster.local:9090
+#          query: |
+#            sum(rate(http_requests_total{
+#              service="{{`{{args.service-name}}`}}",
+#              status=~"2.."
+#            }[2m]))
+#            /
+#            sum(rate(http_requests_total{
+#              service="{{`{{args.service-name}}`}}"
+#            }[2m]))
+#
+#---

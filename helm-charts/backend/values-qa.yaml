@@ -88,7 +88,7 @@ PersistentVolumeClaim:
 
 
 storageClass:
-  enabled: true
+  enabled: false
   resourceGroup: "my-aks-resource-group"
   subscriptionID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   tenantID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

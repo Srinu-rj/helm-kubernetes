@@ -12,7 +12,7 @@ spec:
         - pause: { duration: 20m }
         - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
             templates:
-              - templateName: error_rate
+              - templateName: error-rate
               - templateName: latency
               - templateName: pod-restarts
 
