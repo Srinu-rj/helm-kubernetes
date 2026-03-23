@@ -23,7 +23,7 @@ argocd app resources <APP_NAME>: Check resource health.
 kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller --tail=50: View controller logs for errors.
 kubectl logs -n argocd -l app.kubernetes.io/name=argocd-repo-server --tail=50: View repo server logs.
 
-# ARGO CD
+# ARGO CDK
 sudo snap install helm --classic
 kubectl create ns argocd
 helm repo add argo https://argoproj.github.io/argo-helm
