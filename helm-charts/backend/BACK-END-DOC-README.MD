@@ -3,10 +3,10 @@ helm template dev-deployment backend/ -f backend/values-dev.yaml > back-end-depl
 helm template future-deployment backend/ -f backend/values-future.yaml > back-end-deployment-future.yaml
 helm template prod-deployment backend/ -f backend/values-prod.yaml > back-end-deployment-prod.yaml
 
-helm get manifest backend-qa-realese
-helm get manifest backend-dev-realese
-helm get manifest backend-future-realese
-helm get manifest backend-prod-realese
+helm get manifest backend-qa-release
+helm get manifest backend-dev-release
+helm get manifest backend-future-release
+helm get manifest backend-prod-release
 
 # Template & Rendering
 helm template debug-backend-release ./backend --debug > rendered.yaml

@@ -3,7 +3,7 @@ rollout:
     env: prod
   name: backend-canary-deployment
   namespace: back-end-dev-namespace
-  replicas: 6
+  replicas: 3
 #  strategy:
 #    canary:
 #      steps:

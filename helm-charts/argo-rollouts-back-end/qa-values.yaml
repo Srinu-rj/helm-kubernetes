@@ -2,8 +2,8 @@ rollout:
   app:
     env: prod
   name: backend-canary-deployment
-  namespace: back-end-qa-namespace
-  replicas: 3
+  namespace: back-end-qa-namespace-rollout
+  replicas: 6
 #  strategy:
 #    canary:
 #      steps:
