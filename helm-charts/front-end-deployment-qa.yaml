@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: front-qa-namespace
+  name: front-end-qa-namespace
   labels:
     app.kubernetes.io/managed-by: Helm
     pod-security.kubernetes.io/enforce: restricted   # strictest
@@ -13,32 +13,33 @@ metadata:
     meta.helm.sh/release-name: frontend-qa-deployment
     meta.helm.sh/release-namespace: default
 ---
-# Source: front-end/templates/service.yml
+# Source: front-end/templates/service.yaml
+# ← will work now
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
-  namespace: front-qa-namespace
+  namespace: front-end-qa-namespace
   labels:
-    app: frontend
-    env: front-end
+        app: frontend
+        env: front-end
 spec:
+  type: NodePort
   selector:
-    app: frontend
-    env: front-end
+        app: frontend
+        env: front-end
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
-      protocal: http
-  type: ClusterIP
+    - name: http
+      port: 3000
+      targetPort: 3000
+      nodePort: 32201
 ---
 # Source: front-end/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: front-end-deployment
-  namespace: front-qa-namespace
+  name: frontend-deployment
+  namespace: front-end-qa-namespace
   labels:
     app: frontend
     env: front-end
@@ -47,11 +48,11 @@ spec:
     matchLabels:
       app: frontend
       env: front-end
-  replicas: 4
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 3
+      maxSurge: 1
       maxUnavailable: 0
   template:
     metadata:
@@ -66,23 +67,21 @@ spec:
         seccompProfile:
           type: RuntimeDefault   # ← pod level
       containers:
-        - name: frontendcontainer
+        - name: frontend-container
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
               - ALL
-            readOnlyRootFilesystem: true
             runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault  # ← container level
+            runAsUser: 1000  # ← container level
           image: "mahesh032/angular-web-app:71"
           ports:
-            - containerPort: 80
+            - containerPort: 3000
           resources:
             requests:
               cpu: 100m
               memory: 128Mi
             limits:
-              cpu: 100m
-              memory: 128Mi
+              cpu: 200m
+              memory: 256Mi

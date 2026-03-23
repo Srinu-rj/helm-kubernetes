@@ -12,20 +12,24 @@ helm get manifest backend-prod-realese
 helm template debug-backend-release ./backend --debug > rendered.yaml
 helm template debug-backend-release-spc-file ./backend -s templates/deployment.yaml
 
-helm install backend-qa-realese backend/ --values backend/values-qa.yaml --wait --timeout 1m
-helm install backend-dev-realese backend/ --values backend/values-dev.yaml --wait --timeout 5m
-helm install backend-future-realese backend/ --values backend/values-future.yaml --wait --timeout 5m
-helm install backend-prod-realese backend/ --values backend/values-prod.yaml --wait --timeout 5m
+helm install backend-qa-release backend/ --values backend/values-qa.yaml --wait --timeout 1m
+helm install backend-dev-release backend/ --values backend/values-dev.yaml --wait --timeout 5m
+helm install backend-future-release backend/ --values backend/values-future.yaml --wait --timeout 5m
+helm install backend-prod-release backend/ --values backend/values-prod.yaml --wait --timeout 5m
 
 watch kubectl get all -n back-end-qa-namespace
 watch kubectl get all -n back-end-dev-namespace
 watch kubectl get all -n back-end-future-namespace
 watch kubectl get all -n back-end-prod-namespace
 
-helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml
-helm upgrade backend-dev-realese backend/ --values backend/values-dev.yaml
-helm upgrade backend-future-realese backend/ --values backend/values-future.yaml
-helm upgrade backend-prod-realese backend/ --values backend/values-prod.yaml
+helm upgrade backend-qa-release backend/ --values backend/values-qa.yaml --wait --timeout 5m && helm test backend-qa-release --logs  ||   helm upgrade backend-qa-realese backend/ --values backend/values-qa.yaml --dry-run --debug 2>&1 | grep -A5 "test-connection"
+helm upgrade backend-dev-release backend/ --values backend/values-dev.yaml --wait --timeout 5m && helm test backend-qa-release --logs
+helm upgrade backend-future-release backend/ --values backend/values-future.yaml --wait --timeout 5m && helm test backend-qa-release --logs
+helm upgrade backend-prod-release backend/ --values backend/values-prod.yaml --wait --timeout 5m && helm test backend-qa-release --logs
+
+
+helm test backend-qa-release
+helm test backend-qa-release --logs
 
 # Dry run before actual install (server-side validation)
 helm install my-release ./my-chart --dry-run
@@ -40,10 +44,10 @@ helm install my-release ./my-chart --atomic --timeout 2m
 helm install my-release ./my-chart --wait --timeout 5m
 
 
-helm uninstall backend-qa-realese
-helm uninstall backend-dev-realese
-helm uninstall backend-feture-realese
-helm uninstall backend-prod-realese
+helm uninstall backend-qa-release
+helm uninstall backend-dev-release
+helm uninstall backend-future-release
+helm uninstall backend-prod-release
 
 # Lint your chart for errors
 helm lint ./backend

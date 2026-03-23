@@ -43,30 +43,32 @@ secretsKey:
       key: username
 
 service:
+  enabled: true
   serviceApp: backend-service
-  types: NodePort
-  targetPort: 1199
+  type: NodePort
   port: 1199
+  targetPort: 1199
+  nodePort: 31197      #TODO NodePort range (30000–32767)
 
 app:
   env: dev
 
 image:
   repository: srinu641/spring-application-k8s
-  tag: V5.1
+  tag: V2.0
   pullPolicy: IfNotPresent
 
 container:
-  containerName: springbootcontainer # container name must be lower case
+  containerName: spring-boot-container # container name must be lower case
   port: 1199
 
 resources:
   requests:
-    cpu: "100m"
-    memory: "128Mi"
+    cpu: "300m"
+    memory: "328Mi"
   limits:
-    cpu: "200m"
-    memory: "256Mi"
+    cpu: "500m"
+    memory: "600Mi"
 
 strategy:
   type: RollingUpdate
@@ -83,19 +85,27 @@ PersistentVolumeClaim:
   name: aks-dynamic-pvc
   storage: 50Gi
 
-#TODO -> ReadWriteMany access mode, allowing multiple Pods across different nodes to access the same data.
-#TODO ->  file.csi.azure.com: This driver is better suited for shared application data and stateful applications requiring file-level sharing
-serviceAccount:
-  enabled: false
-  automount: true
-  annotations: {}
-  name: backend-azure-blob-aks-storage
-  provisioner:  blob.csi.azure.com #TODO -> file.csi.azure.com
-  reclaimPolicy: Delete #TODO -> Retain
-  volumeBindingMode: WaitForFirstConsumer #TODO -> Immediate | WaitForFirstConsumer: Binding is delayed until a pod that uses the PVC is scheduled
-  skuName: Premium_LRS
-  azureStorageAuthType: ManagedIdentity
+
+storageClass:
+  enabled: true
+  resourceGroup: "my-aks-resource-group"
+  subscriptionID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  tenantID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  location: "eastus"
+
   allowVolumeExpansion: true
+  reclaimPolicy: Retain           # Retain | Delete
+  tags: "env=production,team=backend"
+
+  azureDisk:
+    name: "azure-disk"
+    diskEncryptionSetID: ""       # optional: /subscriptions/.../diskEncryptionSets/myDES
+
+  azureFile:
+    name: "azure-file"
+    skuName: "Standard_LRS"       # Standard_LRS | Premium_LRS | Standard_GRS | Standard_ZRS
+    authType: "workloadIdentity"  # workloadIdentity | managedIdentity | msi | spn | key
+    storageAccountName: "myaksstore"
 
 HaProxy:
   enabled: true
@@ -135,7 +145,7 @@ NamespaceFinalizers:
 keda:
   enabled: true
   name: backend-hpa
-  minReplicas: 1
+  minReplicas: 3 #TODO ← should must match your desired replica count
   maxReplicas: 10
 
 
@@ -214,7 +224,7 @@ podSecurityContext:
 securityContext:
   runAsNonRoot: true
   allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
+  #  readOnlyRootFilesystem: true  #TODO ← can cause app failures
   seccompProfile:
     type: RuntimeDefault
   capabilities:

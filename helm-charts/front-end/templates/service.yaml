@@ -1,20 +1,20 @@
- {{- if .Values.service.enabled }}
+ {{- if .Values.service.enabled }}          # ← will work now
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.service.name }}
+  name: {{ .Values.service.serviceApp }}
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "frontend" . | nindent 4 }}
+    {{- include "frontend" .| nindent 8 }}
 spec:
+  type: {{ .Values.service.type }}
   selector:
-    {{- include "frontend" . | nindent 4 }}
+    {{- include "frontend" .| nindent 8 }}
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: {{ .Values.service.port }}
-      protocal: http
-  type: ClusterIP
-   {{- end }}
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort }}
+       {{- end }}
 
 ---

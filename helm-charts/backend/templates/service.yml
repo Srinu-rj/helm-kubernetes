@@ -7,12 +7,12 @@ metadata:
   labels:
     {{- include "app-label" . | nindent 4 }}
 spec:
-  type: NodePort
+  type: {{ .Values.service.type }}
   selector:
     {{- include "app-label" . | nindent 4 }}
   ports:
     - name: http
-      port: 80
+      port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort }}
        {{- end }}
----

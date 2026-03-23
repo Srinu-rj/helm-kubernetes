@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: {{ .Values.deploymentName }}
   namespace: {{ .Values.namespace.name }}
+  annotations:
+
   labels:
     {{- include "app-label" . | nindent 4 }}
 spec:

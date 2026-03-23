@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-test-connection
+  namespace: {{ include "frontend.namespace" . }}
+  labels:
+    {{- include "frontend.testLabels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-weight": "1"
+spec:
+  restartPolicy: Never
+  # ── Pod level security context ──────────────────
+  securityContext:
+    runAsNonRoot: true                        # ← required
+    runAsUser: 1000                           # ← non-root user
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault                    # ← required
+  containers:
+    - name: test-connection
+      image: curlimages/curl:latest           # ← runs as non-root by default ✅
+      # ── Container level security context ───────
+      securityContext:
+        allowPrivilegeEscalation: false       # ← required
+        runAsNonRoot: true                    # ← required
+        runAsUser: 1000
+        readOnlyRootFilesystem: true          # ← best practice
+        seccompProfile:
+          type: RuntimeDefault               # ← required
+        capabilities:
+          drop:
+            - ALL                            # ← required
+      command:
+        - curl
+        - '--connect-timeout'
+        - '10'
+        - '--silent'
+        - '--show-error'
+        - '--fail'
+        - '--retry'
+        - '3'
+        - '--retry-delay'
+        - '5'
+        - 'http://{{ .Values.service.serviceApp }}.{{ include "frontend.namespace" . }}.svc.cluster.local:{{ .Values.service.port }}/health'
+
+
+---

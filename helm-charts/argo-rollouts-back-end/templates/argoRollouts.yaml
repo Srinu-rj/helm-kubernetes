@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.rollout.name }}
   namespace: {{ .Values.rollout.namespace }}
 spec:
-  replicas: {{ .Values.rollout.replicas }}
+  replicas: {{ .Values.rollout.replicas }} #TODO NUMBER OF DEPLOYMENT REPLICAS
   strategy:
     canary:
       steps:

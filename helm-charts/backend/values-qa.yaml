@@ -1,4 +1,4 @@
-replicas: 2
+replicas: 3
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -43,10 +43,12 @@ secretsKey:
       key: username
 
 service:
+  enabled: true
   serviceApp: backend-service
-  types: NodePort
-  targetPort: 1199
+  type: NodePort
   port: 1199
+  targetPort: 1199
+  nodePort: 31199      #TODO NodePort range (30000–32767)
 
 app:
   env: dev
@@ -57,7 +59,7 @@ image:
   pullPolicy: IfNotPresent
 
 container:
-  containerName: springbootcontainer # container name must be lower case
+  containerName: spring-boot-container # container name must be lower case
   port: 1199
 
 resources:
@@ -77,6 +79,7 @@ strategy:
 namespace:
   enabled: true
   name: back-end-qa-namespace
+  defaultNamespace: "default"
 
 PersistentVolumeClaim:
   enabled: false
@@ -143,7 +146,7 @@ NamespaceFinalizers:
 keda:
   enabled: true
   name: backend-hpa
-  minReplicas: 1
+  minReplicas: 3 #TODO ← should must match your desired replica count
   maxReplicas: 10
 
 

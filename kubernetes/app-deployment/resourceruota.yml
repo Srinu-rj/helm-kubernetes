@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: cpu-mem-quota
-  namespace: backend
+  namespace: test
 spec:
   hard:
     pods: "10"
@@ -15,6 +15,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: resource-quota
+  namespace: test
 spec:
   hard:
     requests.cpu: 1 # Todo 400 millicores

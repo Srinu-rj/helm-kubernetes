@@ -1,78 +1,59 @@
+namespace:
+  name: "front-end-dev-namespace"
+
 app:
-  deploymentName: front-end-deployment
-  replicaCount: 4
+  deploymentName: "frontend-deployment"
+  replicaCount: 2
   env: front-end
 
-service:
-  enabled: true
-  name: frontend-service
-  type: ClusterIP
-  port: 80
-
-namespace:
-  enabled: true
-  name: front-dev-namespace
-
+# ── Image ────────────────────────────────────────────
 image:
-  repository: vaidehisatpute/clonedocker
+  containerName: "frontend-container"
+  repository: "mahesh032/angular-web-app"
+  tag: 71
   pullPolicy: IfNotPresent
-  tag: 115
   containerPort: 3000
-  containerName: frontendcontainer
 
+# ── Deployment Strategy ──────────────────────────────
 strategy:
-  type: RollingUpdate
+  type: RollingUpdate          # RollingUpdate | Recreate
   rollingUpdate:
-    maxSurge: 3
-    maxUnavailable: 0
+    maxSurge: 1                # how many extra pods during upgrade
+    maxUnavailable: 0          # zero downtime
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+# ── Resources ────────────────────────────────────────
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
 
-serviceAccount:
-  create: false
-  automount: true
-  annotations: {}
-  name: aks-sc-front-end
-  provisioner: file.csi.azure.com
-
-PersistentVolumeClaim:
-  enabled: false
-  name: aks-pvc
-
-podAnnotations: {}
-podLabels: {}
-
+# ── Pod Security Context (pod level) ─────────────────
 podSecurityContext:
+  runAsNonRoot: true
   runAsUser: 1000
-  runAsNonRoot: true
   fsGroup: 2000
-  seccompProfile:          # ← missing here
-    type: RuntimeDefault
-
-securityContext:
-  runAsNonRoot: true
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
   seccompProfile:
     type: RuntimeDefault
+
+# ── Container Security Context (container level) ─────
+securityContext:
+  allowPrivilegeEscalation: false
+  #  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
   capabilities:
     drop:
       - ALL
 
-resources:
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-
-
-
-
-
-
-
+# ── Service ──────────────────────────────────────────
+service:
+  enabled: true
+  serviceApp: "frontend-service"
+  type: NodePort
+  port: 3000
+  targetPort: 3000
+  nodePort: 32202              # range 30000–32767
 

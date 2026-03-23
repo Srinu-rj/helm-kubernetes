@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: application-deploy-qq
+  name: application-deploy-test
+  namespace: test
   labels:
     app: app-label
     version: v1.0.1
@@ -10,7 +11,7 @@ spec:
     matchLabels:
       app: app-label
       version: v1.0.1
-  replicas: 9
+  replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -24,7 +25,7 @@ spec:
     spec:
       containers:
         - name: spring-application-container
-          image: srinu641/spring-application-k8s:V2.0
+          image: srinu641/spring-application-k8s:V5.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 1199
@@ -39,7 +40,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: application-service-qq
+  name: application-service
+  namespace: test
   labels:
     app: app-label
     version: v1.0.1
@@ -51,6 +53,6 @@ spec:
   ports:
     - protocol: TCP
       name: http
-      port: 80
+      port: 1199
       targetPort: 1199
 ---
