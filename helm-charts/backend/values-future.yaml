@@ -48,7 +48,7 @@ service:
   type: NodePort
   port: 1199
   targetPort: 1199
-  nodePort: 31300      #TODO NodePort range (30000–32767)
+  nodePort: 31199      #TODO NodePort range (30000–32767)
 
 app:
   env: dev
@@ -79,6 +79,7 @@ strategy:
 namespace:
   enabled: true
   name: back-end-future-namespace
+  defaultNamespace: "default"
 
 PersistentVolumeClaim:
   enabled: false
@@ -90,7 +91,7 @@ storageClass:
   enabled: false
   resourceGroup: "my-aks-resource-group"
   subscriptionID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  tenantID: "xxxxxxxx-xxxx-xxxfux-xxxx-xxxxxxxxxxxx"
+  tenantID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   location: "eastus"
 
   allowVolumeExpansion: true

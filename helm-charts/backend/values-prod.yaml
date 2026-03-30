@@ -1,4 +1,4 @@
-replicas: 7
+replicas: 3
 restartPolicy: Always
 deploymentName: back-end
 image_port_number: 1199
@@ -48,7 +48,7 @@ service:
   type: NodePort
   port: 1199
   targetPort: 1199
-  nodePort: 31197      #TODO NodePort range (30000–32767)
+  nodePort: 31199      #TODO NodePort range (30000–32767)
 
 app:
   env: dev
@@ -79,6 +79,7 @@ strategy:
 namespace:
   enabled: true
   name: back-end-prod-namespace
+  defaultNamespace: "default"
 
 PersistentVolumeClaim:
   enabled: false
@@ -87,7 +88,7 @@ PersistentVolumeClaim:
 
 
 storageClass:
-  enabled: true
+  enabled: false
   resourceGroup: "my-aks-resource-group"
   subscriptionID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   tenantID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

@@ -9,30 +9,30 @@ spec:
     canary:
       steps:
         - setWeight: 20
-        - pause: { duration: 20m }
-#        - analysis: # TODO -> 👉“Before moving to the next canary step, run a health check based on metrics.” : Most production-safe approach ✅
-#            templates:
-#              - templateName: error-rate
-#              - templateName: latency
-#              - templateName: pod-restarts
+        - pause: { duration: 30s }    # ← was 20m
+        #        - analysis: # TODO -> 👉"Before moving to the next canary step, run a health check based on metrics." : Most production-safe approach ✅
+        #            templates:
+        #              - templateName: error-rate
+        #              - templateName: latency
+        #              - templateName: pod-restarts
 
         - setWeight: 40
-        - pause: { duration: 15m }
-#        - analysis:
-#            templates:
-#              - templateName: cpu-usage
-#              - templateName: memory-usage
-#              - templateName: dependency-health
+        - pause: { duration: 30s }    # ← was 15m
+        #        - analysis:
+        #            templates:
+        #              - templateName: cpu-usage
+        #              - templateName: memory-usage
+        #              - templateName: dependency-health
 
         - setWeight: 60
-        - pause: { duration: 10m }
-#        - analysis: # TODO _> 👉 “Before moving to the next canary step, check application latency using a predefined analysis template.”
-#            templates:
-#              - templateName: latency
-#              - templateName: success-rate
+        - pause: { duration: 30s }    # ← was 10m
+        #        - analysis: # TODO _> 👉 "Before moving to the next canary step, check application latency using a predefined analysis template."
+        #            templates:
+        #              - templateName: latency
+        #              - templateName: success-rate
 
         - setWeight: 80
-        - pause: { duration: 05m }
+        - pause: { duration: 30s }    # ← was 05m
 
         - setWeight: 100
   selector:
@@ -48,6 +48,3 @@ spec:
           image: "{{ .Values.container.image }}:{{ .Values.container.tag }}"
           ports:
             - containerPort: {{ .Values.container.port }}
-
----
-
